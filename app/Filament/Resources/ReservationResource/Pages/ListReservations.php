@@ -33,15 +33,15 @@ class ListReservations extends ListRecords
             'On Hold' => Tab::make('On Hold')
                 ->query(fn($query) => $query->where('status', 'On Hold')),
 
-            // 'Checked In' => Tab::make('Checked In')
-            //     ->query(fn($query) => $query->where('status', 'Checked In'))
-            //     ->badgeColor('danger'),
-            // 'Checked Out' => Tab::make('Checked Out')
-            //     ->query(fn($query) => $query->where('status', 'Checked Out'))
-            //     ->badgeColor('gray'),
-            // 'Cancelled' => Tab::make('Cancelled')
-            //     ->query(fn($query) => $query->where('status', 'Cancelled'))
-            //     ->badgeColor('red')
+            'Checked In' => Tab::make('Checked In')
+                ->query(fn($query) => $query->where('status', 'Checked In'))
+                ->badgeColor('danger'),
+            'Checked Out' => Tab::make('Checked Out')
+                ->query(fn($query) => $query->where('status', 'Checked Out'))
+                ->badgeColor('gray'),
+            'Cancelled' => Tab::make('Cancelled')
+                ->query(fn($query) => $query->where('status', 'Cancelled'))
+                ->badgeColor('red')
         ];
     }
 

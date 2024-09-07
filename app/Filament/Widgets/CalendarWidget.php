@@ -5,16 +5,13 @@ namespace App\Filament\Widgets;
 use App\Filament\Resources\ReservationResource;
 use App\Models\Reservation;
 use Carbon\Carbon;
-use Filament\Forms\Form;
-use Illuminate\Database\Eloquent\Model;
+
 use Saade\FilamentFullCalendar\Data\EventData;
-use Filament\Actions\Action;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 
 class CalendarWidget extends FullCalendarWidget
 {
     protected static ?int $sort = 1;
-    // public Model|string|null $model = Reservation::class;
     protected static bool $isLazy = false;
 
     /**
@@ -40,31 +37,27 @@ class CalendarWidget extends FullCalendarWidget
                 ->url(ReservationResource::getUrl('view', ['record' => $reservation]), false)
                 ->textColor('black')
                 ->borderColor('green')
-                ->backgroundColor($this->getRoomColor($reservation->room->room_type_id))
+                ->backgroundColor($this->getReservationColor($reservation->status))   
                 ->extendedProps([
                     'guest_name' => $reservation->guest->name,
-                    'room_type' => $reservation->room->room_type_id,
+                    'room_type' => $reservation->room->room_type,
                     'reservation_status' => $reservation->status,
-                ])  // Add extra data to the event
+                ])
                 ->toArray();
         })->all();
     }
+    protected function getReservationColor(string $reservationStatus): string
+{
+    $colors = [
+        'Confirmed' => '#007BFF',  
+        'On Hold' => '#FFC107',    
+        'Checked In' => '#28A745', 
+        'Checked Out' => '#DC3545', 
+    ];
 
-    /**
-     * Assign different colors to rooms based on room type.
-     */
-    protected function getRoomColor(int $roomTypeId): string
-    {
-        $colors = [
-            1 => '#FF5733',  // Room Type 1: Orange
-            2 => '#33FF57',  // Room Type 2: Green
-            3 => '#FFD700',  // Room Type 3: Yellow
-            4 => '#FF69B4',  // Room Type 4: Pink
-            5 => '#f59e0b',  // Room Type 5: Amber
-        ];
+    return $colors[$reservationStatus] ?? '#CCCCCC'; 
+}
 
-        return $colors[$roomTypeId] ?? '#FFFFFF';  // Default: White
-    }
 
     /**
      * Set calendar configurations.
@@ -72,102 +65,60 @@ class CalendarWidget extends FullCalendarWidget
     public function config(): array
     {
         return [
+            // Header toolbar configuration
             'headerToolbar' => [
-                'left' => 'prev,next today listMonth',  // Navigation controls
-                'center' => 'title',                    // Calendar title
-                'right' => 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',  // View controls
+                'left' => 'prev,next today',        
+                'center' => 'title',                 
+                'right' => 'dayGridMonth,timeGridWeek,timeGridDay',  
             ],
-            'height' => 800,                           // Set calendar height
-            'initialView' => 'dayGridMonth',            // Default view when calendar loads
-            'navLinks' => true,                         // Allow navigation by clicking on dates
-            'weekNumbers' => true,                      // Show week numbers on the calendar
-            // 'dayMaxEvents' => true,                     // Limit the number of events shown per day
-            'eventDisplay' => 'block',                  // Display events as blocks
-            'displayEventTime' => false,                // Disable displaying time on events
-            'views' => [                                // Customize different views
+            'height' => 800,                         
+            'initialView' => 'dayGridMonth',         
+            'navLinks' => true,                     
+            'weekNumbers' => true,                  
+            'eventDisplay' => 'block',             
+            'displayEventTime' => false,           
+    
+            // Injecting legend directly into the DOM 
+            'eventDidMount' => <<<JS
+            function() {
+                var legend = document.createElement('div');
+                legend.style.marginBottom = '15px';   
+                legend.innerHTML = `
+                    <div style="display: flex; gap: 20px; padding: 10px 0;">
+                        <div style="display: flex; align-items: center;">
+                            <div style="background-color: #007BFF; width: 20px; height: 20px; margin-right: 8px;"></div><span>Confirmed</span>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div style="background-color: #FFC107; width: 20px; height: 20px; margin-right: 8px;"></div><span>On Hold</span>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div style="background-color: #28A745; width: 20px; height: 20px; margin-right: 8px;"></div><span>Checked In</span>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div style="background-color: #DC3545; width: 20px; height: 20px; margin-right: 8px;"></div><span>Checked Out</span>
+                        </div>
+                    </div>`;
+                var calendarEl = document.getElementById('calendar-container');
+                calendarEl.insertBefore(legend, calendarEl.firstChild);
+            }
+            JS,
+            'views' => [
                 'dayGridMonth' => [
-                    'dayMaxEvents' => false,             // Limit events in month view
-                    'eventLimit' => 5,                  // Maximum number of events before showing "+more"
+                    'dayMaxEvents' => false,          
                 ],
-
-
-                'listWeek' => [                         // Week view with a list of events
-                    'listDayAltFormat' => 'DD/MM/YYYY', // Custom date format
-                ],
+                'timeGridWeek' => [],               
+                'timeGridDay' => [],              
             ],
+    
             'eventClick' => <<<JS
             function(info) {
-                window.open(info.event.url, '_blank');
-                info.jsEvent.preventDefault(); // Prevent the browser from following the URL.
+                window.open(info.event.url, '_blank'); 
+                info.jsEvent.preventDefault();         
             }
-        JS,
-            'select' => <<<JS
-            function(info) {
-                alert('Selected from ' + info.startStr + ' to ' + info.endStr);
-            }
-        JS,
-            'eventDidMount' => <<<JS
-            function(info) {
-                // Add a tooltip with event title
-                var tooltip = new Tooltip(info.el, {
-                    title: info.event.title,
-                    placement: 'top',
-                    trigger: 'hover',
-                    container: 'body'
-                });
-            }
-        JS,
+            JS,
         ];
     }
-
-
-    /**
-     * Define the action to create a new reservation.
-     */
-    // protected function headerActions(): array
-    // {
-    //     return [
-    //         Action::make('create')
-    //             ->url(ReservationResource::getUrl('create'))
-    //             ->label('Create Reservation')
-    //             ->icon('heroicon-o-plus')
-    //             ->color('success')
-    //             ->tooltip('Create a new reservation')
-    //             ->openUrlInNewTab(),
-    //     ];
-    // }
-
-    /**
-     * Define modal actions, if needed.
-     */
-    // protected function modalActions(): array
-    // {
-    //     return [];
-    // }
-
-    /**
-     * Define the view action for events.
-     */
-    // protected function viewAction(): Action
-    // {
-    //     return Action::make('view')
-    //         ->url(fn (Reservation $reservation) => ReservationResource::getUrl('view', ['record' => $reservation->id]))
-    //         ->openUrlInNewTab();
-    // }
-
-    /**
-     * Get the form schema for the reservation resource.
-     *   */
-    //
-
-    // public function getFormSchema(): array
-    // {
-    //     return ReservationResource::getFormSchema();
-    // }
-
-    /**
-     * Custom event mount function for tooltip or other purposes.
-     */
+    
     public function eventDidMount(): string
     {
         return <<<JS

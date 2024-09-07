@@ -21,6 +21,8 @@ class StatsOverview extends BaseWidget
             $this->getActiveReservations(), // Total number of active reservations (confirmed + checked-in)
             $this->getAvailableRooms(),     // Total number of available rooms
             $this->getTotalRoomsBooked(),   // Total number of rooms booked (checked in + confirmed)
+            $this->getOccupancyRate(),
+            $this->getCancellationRate()
         ];
     }
 
@@ -85,4 +87,25 @@ class StatsOverview extends BaseWidget
             ->descriptionIcon('heroicon-o-building-office-2')
             ->color('warning');
     }
+    protected function getOccupancyRate()
+{
+    $totalRooms = Room::count();
+    $bookedRooms = Reservation::whereIn('status', ['Confirmed', 'Checked In'])->distinct('room_id')->count();
+    $occupancyRate = ($bookedRooms / $totalRooms) * 100;
+
+    return Stat::make('Occupancy Rate', round($occupancyRate, 2) . '%')
+        ->description('Percentage of booked rooms')
+        ->color('blue');
+}
+protected function getCancellationRate()
+{
+    $totalReservations = Reservation::count();
+    $canceledReservations = Reservation::where('status', 'Canceled')->count();
+    $cancellationRate = ($canceledReservations / $totalReservations) * 100;
+
+    return Stat::make('Cancellation Rate', round($cancellationRate, 2) . '%')
+        ->description('Percentage of canceled reservations')
+        ->color('red');
+}
+
 }

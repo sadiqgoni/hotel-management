@@ -1,8 +1,8 @@
 <?php
+
 namespace App\Jobs;
 
 use App\Models\Reservation;
-use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -17,6 +17,8 @@ class ExpireReservation implements ShouldQueue
 
     /**
      * Create a new job instance.
+     *
+     * @return void
      */
     public function __construct($reservationId)
     {
@@ -25,17 +27,17 @@ class ExpireReservation implements ShouldQueue
 
     /**
      * Execute the job.
+     *
+     * @return void
      */
     public function handle()
     {
+        // Find the reservation
         $reservation = Reservation::find($this->reservationId);
 
-        if ($reservation && $reservation->status === 'On Hold' && 
-            Carbon::now()->diffInHours($reservation->created_at) >= 1) {
-            // Mark the reservation as expired
+        if ($reservation && $reservation->status === 'On Hold') {
+            // Update the reservation status to expired if it's still on hold
             $reservation->update(['status' => 'Expired']);
-            
-            // Optionally notify the staff/guest about expiration
         }
     }
 }

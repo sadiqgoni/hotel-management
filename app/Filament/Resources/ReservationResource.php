@@ -62,7 +62,6 @@ class ReservationResource extends Resource
                                         ->orWhereRaw('? BETWEEN check_in_date AND check_out_date', [$checkInDate])
                                         ->orWhereRaw('? BETWEEN check_in_date AND check_out_date', [$checkOutDate]);
                                 })->pluck('room_id')->toArray();
-
                                 return Room::whereNotIn('id', $occupiedRoomIds)
                                     ->pluck('room_number', 'id');
                             })
@@ -109,8 +108,6 @@ class ReservationResource extends Resource
                             ->options([
                                 'Confirmed' => 'Confirmed',
                                 'On Hold' => 'On Hold',
-                                'Checked In' => 'Checked In',
-                                'Checked Out' => 'Checked Out',
                             ])
                             ->required()
                             ->reactive()

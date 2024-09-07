@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\RoomResource\Pages;
 use App\Filament\Resources\RoomResource\RelationManagers;
+use App\Models\Reservation;
 use App\Models\Room;
 use App\Models\RoomType;
 use Filament\Forms;
@@ -16,6 +17,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
@@ -56,6 +58,8 @@ class RoomResource extends Resource
                                             // Set the price per night and max occupancy based on the selected Room Type
                                             $set('price_per_night', $roomType->base_price);
                                             $set('max_occupancy', $roomType->max_occupancy);
+                                            $set('description', $roomType->description);
+
 
                                             // Generate the next room number based on the room type name
                                             $roomPrefix = strtoupper(substr($roomType->name, 0, 3)); // Get first 3 letters
@@ -77,29 +81,30 @@ class RoomResource extends Resource
 
                                 TextInput::make('room_number')
                                     ->label('Room Number')
-                                    ->required()
                                     ->readOnly()
                                     ->placeholder('Auto-generated Room Number'),
 
                                 TextInput::make('price_per_night')
                                     ->label('Price per Night')
-                                    ->required()
                                     ->placeholder('Auto-filled based on Room Type')
                                     ->readOnly(),
 
                                 TextInput::make('max_occupancy')
                                     ->label('Max Occupancy')
-                                    ->required()
                                     ->placeholder('Auto-filled based on Room Type')
                                     ->readOnly(),
                                 TextInput::make('description')
                                     ->label('Description')
-                                    ->placeholder('Enter Room Description'),
+                                    ->placeholder('Auto-filled based on Room Type')
+                                    ->readOnly(),
+
                                 Forms\Components\Toggle::make('status')
                                     ->label('Availability')
                                     ->default(1)
                                     ->live(onBlur: true)
-                                    ->helperText('Toggle this to mark the room as available or unavailable based on its current reservation status.'),
+                                    ->helperText('Toggle this to mark the room as available or unavailable.')
+                                    ->disabled(fn($get) => Reservation::where('room_id', $get('id'))->whereIn('status', ['Confirmed', 'Checked In'])->exists()),
+
                             ])
                             ->columns(2),
                     ]),
@@ -142,8 +147,14 @@ class RoomResource extends Resource
                     ->limit(50),
             ])
             ->filters([
-                //
+                SelectFilter::make('status')
+                    ->options([
+                        '1' => 'Available',
+                        '0' => 'Unavailable',
+                    ])
+                    ->searchable()
             ])
+
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),

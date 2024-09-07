@@ -47,11 +47,14 @@ class GuestResource extends Resource
                                     ->nullable()
                                     ->label('Phone Number')
                                     ->placeholder('Enter phone number')
+                                    ->unique(Guest::class, 'phone_number')
                                     ->maxLength(255),
                                 TextInput::make('nin_number')
                                     ->label('NIN Number')
                                     ->placeholder('Enter NIN')
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->unique(Guest::class, 'nin_number'), 
+
                                 TextInput::make('bonus_code')
                                     ->label('Bonus Code')
                                     ->placeholder('Enter Bonus Code')

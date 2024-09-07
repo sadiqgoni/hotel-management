@@ -19,6 +19,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
+use App\Models\Room;
 
 class CheckInCheckOutResource extends Resource
 {
@@ -26,18 +27,20 @@ class CheckInCheckOutResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-arrow-left-end-on-rectangle';
     protected static ?string $navigationGroup = 'Operations Management';
     protected static ?string $navigationLabel = 'Check-In/Check-Out';
+
+    // FORM SCHEMA
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                // Select only reservations that are 'Confirmed' and not already checked-in or checked-out.
+                // Select only confirmed reservations that have not already been checked in or checked out
                 Select::make('reservation_id')
                     ->label('Reservation')
                     ->preload()
                     ->searchable()
                     ->options(
                         Reservation::query()
-                            ->where('status', 'Confirmed')  // Only 'Confirmed' reservations
+                            ->where('status', 'Confirmed')  // Only show confirmed reservations
                             ->whereNotExists(function ($query) {
                                 $query->select('id')
                                     ->from('check_in_check_outs')
@@ -65,20 +68,21 @@ class CheckInCheckOutResource extends Resource
                         'Checked In' => 'Checked In',
                         'Checked Out' => 'Checked Out',
                     ])
-
                     ->default('Pending')
                     ->required(),
             ]);
     }
 
+    // TABLE SCHEMA
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
                 TextColumn::make('id')
-                ->label('ID')
-                ->sortable()
-                ->searchable(),
+                    ->label('ID')
+                    ->sortable()
+                    ->searchable(),
+
                 TextColumn::make('reservation.guest.name')
                     ->label('Guest Name')
                     ->sortable()
@@ -94,7 +98,6 @@ class CheckInCheckOutResource extends Resource
 
                 BadgeColumn::make('status')
                     ->label('Status')
-                  
                     ->color(fn(string $state): string => match ($state) {
                         'Pending' => 'danger',
                         'Checked In' => 'success',
@@ -122,6 +125,12 @@ class CheckInCheckOutResource extends Resource
                             return;
                         }
 
+                        // Ensure the reservation is confirmed and has not already been checked in or out
+                        if ($record->reservation->status !== 'Confirmed') {
+                            Notification::make()->title('Reservation is not confirmed or has already been used!')->danger()->send();
+                            return;
+                        }
+
                         // Update check-in and reservation status
                         $record->update([
                             'check_in_time' => Carbon::now(),
@@ -130,6 +139,9 @@ class CheckInCheckOutResource extends Resource
 
                         // Update the reservation status to 'Checked In'
                         $record->reservation->update(['status' => 'Checked In']);
+
+                        // Mark room as unavailable
+                        $record->reservation->room->update(['status' => 0]);
 
                         Notification::make()
                             ->title('Check-In Successful!')
@@ -148,6 +160,12 @@ class CheckInCheckOutResource extends Resource
                             return;
                         }
 
+                        // Ensure the guest has been checked in before allowing check-out
+                        if ($record->status !== 'Checked In') {
+                            Notification::make()->title('Guest must be checked in before checking out!')->danger()->send();
+                            return;
+                        }
+
                         // Update check-out time and reservation status
                         $record->update([
                             'check_out_time' => Carbon::now(),
@@ -156,6 +174,9 @@ class CheckInCheckOutResource extends Resource
 
                         // Update the reservation status to 'Checked Out'
                         $record->reservation->update(['status' => 'Checked Out']);
+
+                        // Mark room as available again
+                        $record->reservation->room->update(['status' => 1]);
 
                         Notification::make()
                             ->title('Check-Out Successful!')
@@ -170,7 +191,7 @@ class CheckInCheckOutResource extends Resource
             ]);
     }
 
-
+    // PAGE ROUTES
     public static function getPages(): array
     {
         return [
@@ -180,4 +201,5 @@ class CheckInCheckOutResource extends Resource
         ];
     }
 }
+
 
