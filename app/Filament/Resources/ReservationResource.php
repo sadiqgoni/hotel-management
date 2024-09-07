@@ -22,7 +22,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
-
 class ReservationResource extends Resource
 {
     protected static ?string $model = Reservation::class;
@@ -37,110 +36,112 @@ class ReservationResource extends Resource
     public static function getFormSchema(): array
     {
         return [
-            Card::make()
-                ->schema([
-                    Section::make('Reservation Details')
-                        ->description('Provide details about the guest and room')
+            Card::make()->schema([
+                Section::make('Reservation Details')
+                    ->description('Provide details about the guest and room')
+                    ->schema([
+                        Select::make('guest_id')
+                            ->label('Guest')
+                            ->preload()
+                            ->searchable()
+                            ->options(Guest::query()->pluck('name', 'id')->toArray())
+                            ->required()
+                            ->placeholder('Select Guest'),
 
-                        ->schema([
-                            Select::make('guest_id')
-                                ->label('Guest')
-                                ->preload()
-                                ->searchable()
-                                ->options(Guest::query()->pluck('name', 'id')->toArray())
-                                ->required()
-                                ->placeholder('Select Guest'),
+                        Select::make('room_id')
+                            ->label('Room')
+                            ->searchable()
+                            ->options(function (callable $get) {
+                                $checkInDate = Carbon::parse($get('check_in_date'));
+                                $checkOutDate = Carbon::parse($get('check_out_date'));
 
-                                Select::make('room_id')
-                                ->label('Room')
-                                ->searchable()
-                                ->options(function (callable $get) {
-                                    $checkInDate = Carbon::parse($get('check_in_date'));
-                                    $checkOutDate = Carbon::parse($get('check_out_date'));
-                                    
-                                    $occupiedRoomIds = Reservation::where(function ($query) use ($checkInDate, $checkOutDate) {
-                                        $query->whereBetween('check_in_date', [$checkInDate, $checkOutDate])
-                                              ->orWhereBetween('check_out_date', [$checkInDate, $checkOutDate])
-                                              ->orWhereRaw('? BETWEEN check_in_date AND check_out_date', [$checkInDate])
-                                              ->orWhereRaw('? BETWEEN check_in_date AND check_out_date', [$checkOutDate]);
-                                    })->pluck('room_id')->toArray();
-                            
-                                    return Room::whereNotIn('id', $occupiedRoomIds)
-                                        ->pluck('room_number', 'id');
-                                })
-                                ->required()
-                                ->placeholder('Select Room')
-                                ->reactive()
-                                ->afterStateUpdated(function ($state, callable $set) {
-                                    $room = Room::find($state);
-                                    $set('price_per_night', $room?->price_per_night ?? 0);
-                                }),                            
-                            TextInput::make('price_per_night')
-                                ->label('Price per Night')
-                                ->placeholder('Auto-filled based on Room Type')
-                                ->readOnly(),
+                                // Exclude already reserved rooms during selected dates
+                                $occupiedRoomIds = Reservation::where(function ($query) use ($checkInDate, $checkOutDate) {
+                                    $query->whereBetween('check_in_date', [$checkInDate, $checkOutDate])
+                                        ->orWhereBetween('check_out_date', [$checkInDate, $checkOutDate])
+                                        ->orWhereRaw('? BETWEEN check_in_date AND check_out_date', [$checkInDate])
+                                        ->orWhereRaw('? BETWEEN check_in_date AND check_out_date', [$checkOutDate]);
+                                })->pluck('room_id')->toArray();
 
-                            DatePicker::make('check_in_date')
-                                ->label('Check-In Date')
-                                ->required()
-                                ->placeholder('Select Check-In Date')
-                                ->reactive()
-                                ->afterStateUpdated(function ($state, callable $get, callable $set) {
-                                    static::updateTotalAmount($get, $set);
-                                }),
+                                return Room::whereNotIn('id', $occupiedRoomIds)
+                                    ->pluck('room_number', 'id');
+                            })
+                            ->required()
+                            ->placeholder('Select Room')
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                $room = Room::find($state);
+                                $set('price_per_night', $room?->price_per_night ?? 0);
+                            }),
 
-                            DatePicker::make('check_out_date')
-                                ->label('Check-Out Date')
-                                ->required()
-                                ->afterOrEqual('check_in_date')
-                                ->reactive()
-                                ->afterStateUpdated(function ($state, callable $get, callable $set) {
-                                    static::updateTotalAmount($get, $set);
-                                }),
+                        TextInput::make('price_per_night')
+                            ->label('Price per Night')
+                            ->placeholder('Auto-filled based on Room Type')
+                            ->readOnly(),
 
-                            TextInput::make('total_amount')
-                                ->label('Total Amount')
-                                ->readOnly()
-                                ->numeric()
-                                ->placeholder('Auto-calculated based on Room Rate and Dates'),
-                            Select::make('status')
-                                ->label('Status')
-                                ->searchable()
-                                ->options([
-                                    'Confirmed' => 'Confirmed',
-                                    'On Hold' => 'On Hold',
-                                ])
-                                ->required()
-                                ->reactive()
-                                ->afterStateUpdated(function ($state, callable $get, callable $set) {
-                                    // Handle On Hold logic here
-                                    if ($state === 'On Hold') {
-                                        static::scheduleExpiration($get('reservation_id'));
-                                        Notification::make()
-                                            ->title('Reservation On Hold')
-                                            ->body('This reservation is on hold and will expire in 1 hour.')
-                                            ->success()
-                                            ->send();
+                        DatePicker::make('check_in_date')
+                            ->label('Check-In Date')
+                            ->required()
+                            ->placeholder('Select Check-In Date')
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, callable $get, callable $set) {
+                                static::updateTotalAmount($get, $set);
+                            }),
 
-                                    }
+                        DatePicker::make('check_out_date')
+                            ->label('Check-Out Date')
+                            ->required()
+                            ->afterOrEqual('check_in_date')
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, callable $get, callable $set) {
+                                static::updateTotalAmount($get, $set);
+                            }),
 
+                        TextInput::make('total_amount')
+                            ->label('Total Amount')
+                            ->readOnly()
+                            ->numeric()
+                            ->placeholder('Auto-calculated based on Room Rate and Dates'),
 
-                                }),
+                        Select::make('status')
+                            ->label('Status')
+                            ->searchable()
+                            ->options([
+                                'Confirmed' => 'Confirmed',
+                                'On Hold' => 'On Hold',
+                                'Checked In' => 'Checked In',
+                                'Checked Out' => 'Checked Out',
+                            ])
+                            ->required()
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, callable $get, callable $set) {
+                                // Handle 'On Hold' logic here
+                                if ($state === 'On Hold') {
+                                    static::scheduleExpiration($get('reservation_id'));
+                                    Notification::make()
+                                        ->title('Reservation On Hold')
+                                        ->body('This reservation is on hold and will expire in 1 hour.')
+                                        ->success()
+                                        ->send();
+                                }
+                            }),
 
-                            Textarea::make('special_requests')
-                                ->label('Special Requests')
-                                ->placeholder('Enter any special requests'),
+                        Textarea::make('special_requests')
+                            ->label('Special Requests')
+                            ->placeholder('Enter any special requests'),
 
-                            TextInput::make('number_of_people')
-                                ->label('Number of People')
-                                ->numeric()
-                                ->required(),
-                        ])
-                        ->collapsible()
-                        ->columns(2),
-                ]),
+                        TextInput::make('number_of_people')
+                            ->label('Number of People')
+                            ->numeric()
+                            ->required(),
+                    ])
+                    ->collapsible()
+                    ->columns(2),
+            ]),
         ];
     }
+ 
+
     public static function table(Tables\Table $table): Tables\Table
     {
         return $table
@@ -174,13 +175,17 @@ class ReservationResource extends Resource
                     ->label('Total Amount')
                     ->sortable()
                     ->money('NGN'),
+
                 BadgeColumn::make('status')
                     ->label('Status')
                     ->color(fn(string $state): string => match ($state) {
                         'Confirmed' => 'info',
                         'On Hold' => 'danger',
+                        'Checked In' => 'success',
+                        'Checked Out' => 'warning',
                     })
                     ->sortable(),
+
                 TextColumn::make('number_of_people')
                     ->label('Number of People')
                     ->sortable(),
@@ -206,6 +211,7 @@ class ReservationResource extends Resource
             $set('total_amount', $totalAmount);
         }
     }
+
 
     public static function scheduleExpiration($reservationId)
     {

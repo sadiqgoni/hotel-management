@@ -40,7 +40,7 @@ class AdminPanelProvider extends PanelProvider
                 ->selectable()
                 ->editable()
             ])
-            ->unsavedChangesAlerts()
+            // ->unsavedChangesAlerts()
             ->colors([
                 'primary' => Color::hex('#166534'),
             ])
