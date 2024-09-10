@@ -34,18 +34,17 @@ class StatsOverview extends BaseWidget
         ];
     }
 
-     // 1. Guests Currently Checked In
-    protected function getCheckedInGuests()
+    // 1. Guests Currently Checked In
+    protected function getCheckedInGuests(): Card
     {
-        $count = Guest::whereHas('reservations', function ($query) {
-            $query->where('status', 'checked_in');
-        })->count();
+        $count = Reservation::where('status', 'Checked In')->count();
 
-        return Card::make('Guests Currently Checked In', $count)
-            ->description('Number of guests currently staying in the hotel')
-            ->color('success')
-            ->descriptionIcon('heroicon-o-users');
+        return Card::make('Checked-In Guests', $count)
+            ->description('Number of guests currently checked in')
+            ->descriptionIcon('heroicon-o-user-group')
+            ->color('success');
     }
+
 
 
     // 2. Active Reservations (Confirmed and Checked-In)
@@ -94,24 +93,25 @@ class StatsOverview extends BaseWidget
             ->color('warning');
     }
     protected function getOccupancyRate()
-{
-    $totalRooms = Room::count();
-    $bookedRooms = Reservation::whereIn('status', ['Confirmed', 'Checked In'])->distinct('room_id')->count();
-    $occupancyRate = ($bookedRooms / $totalRooms) * 100;
+    {
+        $totalRooms = Room::count();
+        $bookedRooms = Reservation::whereIn('status', ['Confirmed', 'Checked In'])->distinct('room_id')->count();
+        $occupancyRate = ($bookedRooms / $totalRooms) * 100;
 
-    return Stat::make('Occupancy Rate', round($occupancyRate, 2) . '%')
-        ->description('Percentage of booked rooms')
-        ->color('blue');
-}
-protected function getCancellationRate()
-{
-    $totalReservations = Reservation::count();
-    $canceledReservations = Reservation::where('status', 'Canceled')->count();
-    $cancellationRate = ($canceledReservations / $totalReservations) * 100;
+        return Stat::make('Occupancy Rate', round($occupancyRate, 2) . '%')
+            ->descriptionIcon('heroicon-o-chart-bar')
+            ->description('Percentage of booked rooms')
+            ->color(Color::Emerald);
+    }
+    protected function getCancellationRate()
+    {
+        $totalReservations = Reservation::count();
+        $canceledReservations = Reservation::where('status', 'Canceled')->count();
+        $cancellationRate = ($canceledReservations / $totalReservations) * 100;
 
-    return Stat::make('Cancellation Rate', round($cancellationRate, 2) . '%')
-        ->description('Percentage of canceled reservations')
-        ->color('red');
-}
+        return Stat::make('Cancellation Rate', round($cancellationRate, 2) . '%')
+            ->description('Percentage of canceled reservations')
+            ->color(Color::Red);
+    } 
 
 }
