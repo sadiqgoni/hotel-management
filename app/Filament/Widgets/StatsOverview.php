@@ -7,6 +7,7 @@ use App\Models\Guest;
 use App\Models\Room;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+use Filament\Widgets\StatsOverviewWidget\Card;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
 
@@ -22,25 +23,30 @@ class StatsOverview extends BaseWidget
             $this->getAvailableRooms(),     // Total number of available rooms
             $this->getTotalRoomsBooked(),   // Total number of rooms booked (checked in + confirmed)
             $this->getOccupancyRate(),
-            $this->getCancellationRate()
+            $this->getCancellationRate(),
+
+            // $this->getCheckedInGuests(),
+            // $this->getTotalReservations(),
+            // $this->getAvailableRooms(),
+            // $this->getTotalRevenue(),
+            // $this->getPendingPayments(),
+            // $this->getRoomOccupancyRate(),
         ];
     }
 
-    // 1. Guests Currently Checked In
+     // 1. Guests Currently Checked In
     protected function getCheckedInGuests()
     {
-        $title = 'Guests Currently Checked In';
+        $count = Guest::whereHas('reservations', function ($query) {
+            $query->where('status', 'checked_in');
+        })->count();
 
-        // Query to get the number of distinct guests with 'checked_in' status
-        $checkedInGuestsCount = Reservation::where('status', 'Checked In')
-            ->distinct('guest_id')
-            ->count('guest_id');  // Count distinct guests
-
-        return Stat::make($title, $checkedInGuestsCount)
-            ->description('Guests with ongoing stays')
-            ->descriptionIcon('heroicon-o-user-group')
-            ->color('success');
+        return Card::make('Guests Currently Checked In', $count)
+            ->description('Number of guests currently staying in the hotel')
+            ->color('success')
+            ->descriptionIcon('heroicon-o-users');
     }
+
 
     // 2. Active Reservations (Confirmed and Checked-In)
     protected function getActiveReservations()

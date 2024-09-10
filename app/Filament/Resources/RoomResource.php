@@ -43,6 +43,7 @@ class RoomResource extends Resource
                     ->schema([
                         Section::make('Room Details')
                             ->schema([
+                              
                                 Select::make('room_type_id')
                                     ->label('Room Type')
                                     ->options(RoomType::all()->pluck('name', 'id'))
@@ -59,14 +60,11 @@ class RoomResource extends Resource
                                             $set('price_per_night', $roomType->base_price);
                                             $set('max_occupancy', $roomType->max_occupancy);
                                             $set('description', $roomType->description);
-
-
                                             // Generate the next room number based on the room type name
                                             $roomPrefix = strtoupper(substr($roomType->name, 0, 3)); // Get first 3 letters
                                             $latestRoomNumber = Room::where('room_type_id', $state)
                                                 ->orderBy('room_number', 'desc')
                                                 ->first()?->room_number;
-
                                             // Increment the last room number
                                             if ($latestRoomNumber) {
                                                 $numberPart = (int) substr($latestRoomNumber, 3); // Extract the number part

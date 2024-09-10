@@ -7,6 +7,7 @@ use App\Jobs\ExpireReservation;
 use App\Models\Reservation;
 use App\Models\Guest;
 use App\Models\Room;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Notifications\Notification;
@@ -29,115 +30,119 @@ class ReservationResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-calendar';
     protected static ?string $navigationLabel = 'Manage Reservations';
     protected static ?string $modelLabel = 'Manage Reservations';
+
     public static function form(Forms\Form $form): Forms\Form
     {
-        return $form->schema(static::getFormSchema());
+        return $form
+            ->schema([
+                Card::make()->schema([
+                    Section::make('Reservation Details')
+                        ->description('Add guest and reservation details')
+                        ->schema([
+
+                            Select::make('guest_id')
+                                ->label('Guest')
+                                ->preload()
+                                ->searchable()
+                                ->options(Guest::pluck('name', 'id')->toArray())
+                                ->required()
+                                ->reactive()
+                                ->createOptionForm([
+                                    // Fields for creating a new guest
+                                    TextInput::make('name')
+                                        ->label('Full Name')
+                                        ->required()
+                                        ->maxLength(255),
+
+                                    TextInput::make('phone_number')
+                                        ->label('Phone Number')
+                                        ->unique(Guest::class, 'phone_number')
+                                        ->maxLength(255),
+
+                                    TextInput::make('nin_number')
+                                        ->label('NIN Number')
+                                        ->unique(Guest::class, 'nin_number')
+                                        ->maxLength(255),
+
+                                    Textarea::make('preferences')
+                                        ->label('Preferences')
+                                        ->placeholder('Enter preferences (e.g., Halal food, quiet room)')
+                                ])
+                                ->createOptionAction(function (Action $action) {
+                                    return $action
+                                        ->modalHeading('Create Guest')
+                                        ->modalButton('Create Guest')
+                                        ->modalWidth('lg');
+                                })
+                                ->createOptionUsing(function ($data) {
+                                    // Logic for creating a new guest
+                                    $guest = Guest::create([
+                                        'name' => $data['name'],
+                                        'phone_number' => $data['phone_number'],
+                                        'nin_number' => $data['nin_number'],
+                                        'preferences' => $data['preferences'] ?? null,
+                                    ]);
+
+                                    return $guest->id;  // Return the newly created guest ID
+                                }),
+                            Select::make('room_id')
+                                ->label('Room')
+                                ->searchable()
+                                ->options(Room::all()->pluck('room_number', 'id')->toArray())
+                                ->required()
+                                ->placeholder('Select Room')
+                                ->reactive()
+                                ->afterStateUpdated(function ($state, callable $set) {
+                                    $room = Room::find($state);
+                                    $set('price_per_night', $room?->price_per_night ?? 0);
+                                }),
+
+                            TextInput::make('price_per_night')
+                                ->label('Price per Night')
+                                ->readOnly(),
+
+                            DatePicker::make('check_in_date')
+                                ->label('Check-In Date')
+                                ->required()
+                                ->reactive()
+                                ->afterStateUpdated(function ($state, callable $get, callable $set) {
+                                    static::updateTotalAmount($get, $set);
+                                }),
+
+                            DatePicker::make('check_out_date')
+                                ->label('Check-Out Date')
+                                ->required()
+                                ->afterOrEqual('check_in_date')
+                                ->reactive()
+                                ->afterStateUpdated(function ($state, callable $get, callable $set) {
+                                    static::updateTotalAmount($get, $set);
+                                }),
+
+                            TextInput::make('total_amount')
+                                ->label('Total Amount')
+                                ->readOnly()
+                                ->numeric()
+                                ->placeholder('Auto-calculated based on Room Rate and Dates'),
+
+                            Select::make('status')
+                                ->label('Status')
+                                ->options([
+                                    'Confirmed' => 'Confirmed',
+                                    'On Hold' => 'On Hold',
+                                ])
+                                ->required(),
+
+                            Textarea::make('special_requests')
+                                ->label('Special Requests'),
+
+                            TextInput::make('number_of_people')
+                                ->label('Number of People')
+                                ->required(),
+                        ])
+                        ->columns(2)
+                ])
+            ]);
     }
-    public static function getFormSchema(): array
-    {
-        return [
-            Card::make()->schema([
-                Section::make('Reservation Details')
-                    ->description('Provide details about the guest and room')
-                    ->schema([
-                        Select::make('guest_id')
-                            ->label('Guest')
-                            ->preload()
-                            ->searchable()
-                            ->options(Guest::query()->pluck('name', 'id')->toArray())
-                            ->required()
-                            ->placeholder('Select Guest'),
-
-                        Select::make('room_id')
-                            ->label('Room')
-                            ->searchable()
-                            ->options(function (callable $get) {
-                                $checkInDate = Carbon::parse($get('check_in_date'));
-                                $checkOutDate = Carbon::parse($get('check_out_date'));
-
-                                // Exclude already reserved rooms during selected dates
-                                $occupiedRoomIds = Reservation::where(function ($query) use ($checkInDate, $checkOutDate) {
-                                    $query->whereBetween('check_in_date', [$checkInDate, $checkOutDate])
-                                        ->orWhereBetween('check_out_date', [$checkInDate, $checkOutDate])
-                                        ->orWhereRaw('? BETWEEN check_in_date AND check_out_date', [$checkInDate])
-                                        ->orWhereRaw('? BETWEEN check_in_date AND check_out_date', [$checkOutDate]);
-                                })->pluck('room_id')->toArray();
-                                return Room::whereNotIn('id', $occupiedRoomIds)
-                                    ->pluck('room_number', 'id');
-                            })
-                            ->required()
-                            ->placeholder('Select Room')
-                            ->reactive()
-                            ->afterStateUpdated(function ($state, callable $set) {
-                                $room = Room::find($state);
-                                $set('price_per_night', $room?->price_per_night ?? 0);
-                            }),
-
-                        TextInput::make('price_per_night')
-                            ->label('Price per Night')
-                            ->placeholder('Auto-filled based on Room Type')
-                            ->readOnly(),
-
-                        DatePicker::make('check_in_date')
-                            ->label('Check-In Date')
-                            ->required()
-                            ->placeholder('Select Check-In Date')
-                            ->reactive()
-                            ->afterStateUpdated(function ($state, callable $get, callable $set) {
-                                static::updateTotalAmount($get, $set);
-                            }),
-
-                        DatePicker::make('check_out_date')
-                            ->label('Check-Out Date')
-                            ->required()
-                            ->afterOrEqual('check_in_date')
-                            ->reactive()
-                            ->afterStateUpdated(function ($state, callable $get, callable $set) {
-                                static::updateTotalAmount($get, $set);
-                            }),
-
-                        TextInput::make('total_amount')
-                            ->label('Total Amount')
-                            ->readOnly()
-                            ->numeric()
-                            ->placeholder('Auto-calculated based on Room Rate and Dates'),
-
-                        Select::make('status')
-                            ->label('Status')
-                            ->searchable()
-                            ->options([
-                                'Confirmed' => 'Confirmed',
-                                'On Hold' => 'On Hold',
-                            ])
-                            ->required()
-                            ->reactive()
-                            ->afterStateUpdated(function ($state, callable $get, callable $set) {
-                                // Handle 'On Hold' logic here
-                                if ($state === 'On Hold') {
-                                    static::scheduleExpiration($get('reservation_id'));
-                                    Notification::make()
-                                        ->title('Reservation On Hold')
-                                        ->body('This reservation is on hold and will expire in 1 hour.')
-                                        ->success()
-                                        ->send();
-                                }
-                            }),
-
-                        Textarea::make('special_requests')
-                            ->label('Special Requests')
-                            ->placeholder('Enter any special requests'),
-
-                        TextInput::make('number_of_people')
-                            ->label('Number of People')
-                            ->numeric()
-                            ->required(),
-                    ])
-                    ->collapsible()
-                    ->columns(2),
-            ]),
-        ];
-    }
- 
 
     public static function table(Tables\Table $table): Tables\Table
     {
@@ -183,13 +188,22 @@ class ReservationResource extends Resource
                     })
                     ->sortable(),
 
-                TextColumn::make('number_of_people')
-                    ->label('Number of People')
-                    ->sortable(),
+                // TextColumn::make('number_of_people')
+                //     ->label('Number of People')
+                //     ->sortable(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('Print Reservation Slip')
+                    ->icon('heroicon-o-printer')
+                    ->action(function ($record) {
+                        return redirect()->route('reservations.print', ['reservation' => $record->id]);
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading('Print Reservation Slip'),
+                Tables\Actions\EditAction::make()
+                ->color('warning'),
+                Tables\Actions\ViewAction::make()
+                ->color('success')
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

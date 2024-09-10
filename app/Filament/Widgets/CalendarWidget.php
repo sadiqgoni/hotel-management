@@ -65,43 +65,9 @@ class CalendarWidget extends FullCalendarWidget
             'weekNumbers' => true,
             'eventDisplay' => 'block',
             'displayEventTime' => false,
-            // Injecting legend directly into the DOM 
-            'eventDidMount' => <<<JS
-            function() {
-                var legend = document.createElement('div');
-                legend.style.marginBottom = '15px';   
-                legend.innerHTML = `
-                    <div style="display: flex; gap: 20px; padding: 10px 0;">
-                        <div style="display: flex; align-items: center;">
-                            <div style="background-color: #007BFF; width: 20px; height: 20px; margin-right: 8px;"></div><span>Confirmed</span>
-                        </div>
-                        <div style="display: flex; align-items: center;">
-                            <div style="background-color: #FFC107; width: 20px; height: 20px; margin-right: 8px;"></div><span>On Hold</span>
-                        </div>
-                        <div style="display: flex; align-items: center;">
-                            <div style="background-color: #28A745; width: 20px; height: 20px; margin-right: 8px;"></div><span>Checked In</span>
-                        </div>
-                        <div style="display: flex; align-items: center;">
-                            <div style="background-color: #DC3545; width: 20px; height: 20px; margin-right: 8px;"></div><span>Checked Out</span>
-                        </div>
-                    </div>`;
-                var calendarEl = document.getElementById('calendar-container');
-                calendarEl.insertBefore(legend, calendarEl.firstChild);
-            }
-            JS,
-            'views' => [
-                'dayGridMonth' => [
-                    'dayMaxEvents' => false,
-                ],
-                'timeGridWeek' => [],
-                'timeGridDay' => [],
-            ],
-            'eventClick' => <<<JS
-            function(info) {
-                window.open(info.event.url, '_blank'); 
-                info.jsEvent.preventDefault();         
-            }
-            JS,
+           
+        
+            
         ];
     }
     public function eventDidMount(): string
@@ -113,4 +79,5 @@ class CalendarWidget extends FullCalendarWidget
             }
         JS;
     }
+     
 }
