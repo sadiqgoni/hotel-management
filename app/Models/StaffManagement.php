@@ -31,8 +31,5 @@ class StaffManagement extends Model
         'employment_date' => 'date',
         'termination_date' => 'date',
     ];
-    public function assignedRooms(): HasMany
-    {
-        return $this->hasMany(Room::class, 'housekeeper_id');
-    }
+   
 }

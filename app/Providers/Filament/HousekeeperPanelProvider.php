@@ -2,13 +2,11 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Management\Resources\StaffManagementResource;
-use App\Filament\Management\Resources\UserResource;
+use App\Filament\Frontdesk\Resources\RoomResource;
 use App\Http\Middleware\RoleRedirect;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\MenuItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -22,26 +20,22 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class ManagementPanelProvider extends PanelProvider
+class HousekeeperPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->id('management')
-            ->path('management')
-            ->login()
+            ->id('housekeeper')
+            ->path('housekeeper')
             ->colors([
-                'primary' => Color::Indigo,
+                'primary' => Color::Amber,
             ])
-            ->userMenuItems([
-                MenuItem::make()
-                    ->label('Front Desk')
-                    ->url('/frontdesk')
-                    ->icon('heroicon-o-users'),
-            ])
+            ->login()
+
             ->resources($this->getResources())
             ->pages($this->getPages())
-            ->discoverWidgets(in: app_path('Filament/Management/Widgets'), for: 'App\\Filament\\Management\\Widgets')
+        
+            ->discoverWidgets(in: app_path('Filament/Housekeeper/Widgets'), for: 'App\\Filament\\Housekeeper\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
@@ -66,8 +60,8 @@ class ManagementPanelProvider extends PanelProvider
     protected function getResources(): array
     {
         return [
-            UserResource::class,
-            StaffManagementResource::class
+            RoomResource::class,
+
         ];
     }
     protected function getPages(): array

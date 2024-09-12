@@ -2,45 +2,47 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Pages\ReservationCalendar;
+use App\Filament\Frontdesk\Pages\Dashboard;
+use App\Filament\Frontdesk\Pages\ReservationCalendar;
+use App\Filament\Frontdesk\Resources\CheckInCheckOutResource;
+use App\Filament\Frontdesk\Resources\GuestResource;
+use App\Filament\Frontdesk\Resources\ReservationResource;
+use App\Filament\Frontdesk\Resources\RoomResource;
+use App\Filament\Frontdesk\Resources\RoomTypeResource;
 use App\Http\Middleware\RoleRedirect;
-use Filament\Navigation\MenuItem;
-use Filament\Pages\Dashboard;
+use App\Models\RoomType;
+use Filament\Http\Middleware\Authenticate;
+use Filament\Http\Middleware\DisableBladeIconComponents;
+use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Pages;
 use Filament\Panel;
-use Filament\Widgets;
 use Filament\PanelProvider;
-
 use Filament\Support\Colors\Color;
+use Filament\Navigation\MenuItem;
 use App\Filament\Pages\EditProfile;
 use Filament\Navigation\NavigationGroup;
-use Filament\Http\Middleware\Authenticate;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Filament\Http\Middleware\DisableBladeIconComponents;
-use Filament\Http\Middleware\DispatchServingFilamentEvent;
+
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Swis\Filament\Backgrounds\FilamentBackgroundsPlugin;
 use Swis\Filament\Backgrounds\ImageProviders\MyImages;
-
-class AdminPanelProvider extends PanelProvider
+class FrontdeskPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->id('admin')
-            ->path('admin')
-            ->login()
-            ->plugins([
-                FilamentFullCalendarPlugin::make()
-                ->selectable()
-                ->editable()
+            ->id('frontdesk')
+            ->path('frontdesk')
+            ->colors([
+                'primary' => Color::Amber,
             ])
+            ->login()
             ->colors([
                 'primary' => Color::hex('#166534'),
             ])
@@ -62,9 +64,9 @@ class AdminPanelProvider extends PanelProvider
                 ->label('Management')
                 ->url('/management')
                 ->icon('heroicon-o-squares-2x2'),
-            ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-         
+                ])
+            ->discoverWidgets(in: app_path('Filament/Frontdesk/Widgets'), for: 'App\\Filament\\Frontdesk\\Widgets')
+           
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -78,10 +80,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                RoleRedirect::class,
-
+                RoleRedirect::class
             ])
-            
             ->plugins([
                 FilamentBackgroundsPlugin::make()
                 ->remember(200)
@@ -90,12 +90,21 @@ class AdminPanelProvider extends PanelProvider
                     ->directory('assets/background')
                     )
                 ->showAttribution(false),
+                FilamentFullCalendarPlugin::make()
+                ->selectable()
+                ->editable()
                 // FilamentApexChartsPlugin::make()
              ]);
     }
+
     protected function getResources(): array
     {
         return [
+            CheckInCheckOutResource::class,
+            GuestResource::class,
+            ReservationResource::class,
+            RoomResource::class,
+            RoomTypeResource::class
 
         ];
     }
@@ -103,8 +112,7 @@ class AdminPanelProvider extends PanelProvider
     {
         return [
             Dashboard::class,
-            \App\Filament\Frontdesk\Pages\ReservationCalendar::class
-
+            ReservationCalendar::class
         ];
     }
 }

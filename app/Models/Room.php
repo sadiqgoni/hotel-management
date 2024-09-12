@@ -18,6 +18,7 @@ class Room extends Model
         'price_per_night',
         'status',
         'is_clean',
+        'note',
         'max_occupancy',
         'description',
         'housekeeper_id',
@@ -34,6 +35,6 @@ class Room extends Model
     }
     public function housekeeper(): BelongsTo
     {
-        return $this->belongsTo(StaffManagement::class, 'housekeeper_id');
+        return $this->belongsTo(User::class, 'housekeeper_id');
     }
 }

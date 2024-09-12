@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Filament\Management\Resources\StaffManagementResource\Pages;
+namespace App\Filament\Management\Resources\UserResource\Pages;
 
-use App\Filament\Management\Resources\StaffManagementResource;
+use App\Filament\Management\Resources\UserResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
-class EditStaffManagement extends EditRecord
+class EditUser extends EditRecord
 {
-    protected static string $resource = StaffManagementResource::class;
-
+    protected static string $resource = UserResource::class;
     protected function getRedirectUrl(): string{
         return $this->getResource()::getUrl('index');
     }
+
     protected function getHeaderActions(): array
     {
         return [
