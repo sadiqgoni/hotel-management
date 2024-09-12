@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('staff_management', function (Blueprint $table) {
+        Schema::create('staff_managements', function (Blueprint $table) {
             $table->id(); // Primary Key
             $table->string('full_name'); // Staff's full name
             $table->string('email')->unique(); // Staff's email

@@ -55,6 +55,7 @@ class CheckInCheckOutResource extends Resource
 
                 DateTimePicker::make('check_in_time')
                     ->label('Check-In Time')
+                 
                     ->required(),
 
                 DateTimePicker::make('check_out_time')

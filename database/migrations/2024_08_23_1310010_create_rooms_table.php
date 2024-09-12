@@ -15,8 +15,10 @@ return new class extends Migration
             $table->id(); 
             $table->string('room_number')->unique()->nullable();
             $table->foreignId('room_type_id')->constrained('room_types')->onDelete('cascade'); 
+            $table->foreignId('housekeeper_id')->nullable()->constrained('staff_managements')->onDelete('cascade'); 
             $table->string('price_per_night')->nullable();
             $table->boolean('status')->default(true);
+            $table->boolean('is_clean')->default(true);
             $table->text('description')->nullable();
             $table->string('max_occupancy')->nullable();
 

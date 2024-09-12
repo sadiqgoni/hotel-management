@@ -24,7 +24,7 @@ class CalendarWidget extends FullCalendarWidget
         return $reservations->map(function (Reservation $reservation) {
             return EventData::make()
                 ->id($reservation->id)
-                ->title(strip_tags($reservation->guest->name . ' - Room ' . $reservation->room->room_number))
+                ->title(strip_tags($reservation->guest->name . ' - Room ' . ($reservation->room ? $reservation->room->room_number : 'N/A')))
                 ->start(Carbon::parse($reservation->check_in_date))
                 ->end(Carbon::parse($reservation->check_out_date)->addDay())
                 ->allDay(false)
@@ -34,7 +34,7 @@ class CalendarWidget extends FullCalendarWidget
                 ->backgroundColor($this->getReservationColor($reservation->status))
                 ->extendedProps([
                     'guest_name' => $reservation->guest->name,
-                    'room_type' => $reservation->room->room_type,
+                    'room_type' => $reservation->room ? $reservation->room->room_type : 'N/A',
                     'reservation_status' => $reservation->status,
                 ])
                 ->toArray();
@@ -65,9 +65,9 @@ class CalendarWidget extends FullCalendarWidget
             'weekNumbers' => true,
             'eventDisplay' => 'block',
             'displayEventTime' => false,
-           
-        
-            
+
+
+
         ];
     }
     public function eventDidMount(): string
@@ -79,5 +79,5 @@ class CalendarWidget extends FullCalendarWidget
             }
         JS;
     }
-     
+
 }

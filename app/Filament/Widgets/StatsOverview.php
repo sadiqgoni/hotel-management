@@ -95,14 +95,27 @@ class StatsOverview extends BaseWidget
     protected function getOccupancyRate()
     {
         $totalRooms = Room::count();
-        $bookedRooms = Reservation::whereIn('status', ['Confirmed', 'Checked In'])->distinct('room_id')->count();
+        
+        // Prevent division by zero
+        if ($totalRooms === 0) {
+            return Stat::make('Occupancy Rate', 'N/A')
+                ->descriptionIcon('heroicon-o-chart-bar')
+                ->description('No rooms available')
+                ->color('gray');
+        }
+    
+        $bookedRooms = Reservation::whereIn('status', ['Confirmed', 'Checked In'])
+            ->distinct('room_id')
+            ->count();
+    
         $occupancyRate = ($bookedRooms / $totalRooms) * 100;
-
+    
         return Stat::make('Occupancy Rate', round($occupancyRate, 2) . '%')
             ->descriptionIcon('heroicon-o-chart-bar')
             ->description('Percentage of booked rooms')
-            ->color(Color::Emerald);
+            ->color('emerald');
     }
+    
     protected function getCancellationRate()
     {
         $totalReservations = Reservation::count();

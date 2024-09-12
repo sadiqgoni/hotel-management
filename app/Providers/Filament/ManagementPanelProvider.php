@@ -36,7 +36,6 @@ class ManagementPanelProvider extends PanelProvider
                 ->url('/admin')
                 ->icon('heroicon-o-users'),
             ])
-            ->unsavedChangesAlerts()
             ->discoverResources(in: app_path('Filament/Management/Resources'), for: 'App\\Filament\\Management\\Resources')
             ->discoverPages(in: app_path('Filament/Management/Pages'), for: 'App\\Filament\\Management\\Pages')
             ->pages([

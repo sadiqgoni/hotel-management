@@ -7,6 +7,8 @@ use App\Filament\Resources\RoomResource\RelationManagers;
 use App\Models\Reservation;
 use App\Models\Room;
 use App\Models\RoomType;
+use App\Models\StaffManagement;
+use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Components\Card;
 use Filament\Forms\Components\TextInput;
@@ -43,7 +45,7 @@ class RoomResource extends Resource
                     ->schema([
                         Section::make('Room Details')
                             ->schema([
-                              
+
                                 Select::make('room_type_id')
                                     ->label('Room Type')
                                     ->options(RoomType::all()->pluck('name', 'id'))
@@ -95,6 +97,8 @@ class RoomResource extends Resource
                                     ->label('Description')
                                     ->placeholder('Auto-filled based on Room Type')
                                     ->readOnly(),
+                                
+                             
 
                                 Forms\Components\Toggle::make('status')
                                     ->label('Availability')
@@ -134,6 +138,7 @@ class RoomResource extends Resource
                     ->label('Max Occupancy')
                     ->sortable()
                     ->searchable(),
+
                 IconColumn::make('status')
                     ->label('Availability')
                     ->trueIcon('heroicon-o-check-badge')
@@ -152,8 +157,36 @@ class RoomResource extends Resource
                     ])
                     ->searchable()
             ])
-
             ->actions([
+                Tables\Actions\Action::make('toggleCleaningStatus')
+                ->label(fn(Room $record) => $record->is_clean ? 'Mark as Dirty' : 'Mark as Clean')
+                ->tooltip(fn(Room $record) => $record->is_clean ? 'Set room as dirty' : 'Set room as clean')
+                ->icon(fn(Room $record) => $record->is_clean ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                ->color(fn(Room $record) => $record->is_clean ? 'danger' : 'success')
+                ->action(function (Room $record) {
+                    $record->is_clean = !$record->is_clean;
+                    $record->save();
+                }),
+                Tables\Actions\Action::make('assignHousekeeper')
+                    ->label('Assign Housekeeper')
+                    ->icon('heroicon-o-user-plus')
+                    ->visible(fn(Room $record) => !$record->housekeeper_id && !$record->is_clean)
+                    ->modalHeading('Assign Housekeeper')
+                    ->form([
+                        Select::make('housekeeper_id')
+                            ->label('Housekeeper')
+                            ->options(StaffManagement::where('role', 'housekeeper')->pluck('full_name', 'id')) 
+                            ->required(),
+                        TextInput::make('note')
+                            ->label('Special Instructions')
+                            ->placeholder('Add any notes or special instructions for the housekeeper')
+                            ->nullable(),
+                    ])
+                    ->action(function (Room $record, array $data) {
+                        // Assign housekeeper and save any notes or instructions
+                        $record->housekeeper_id = $data['housekeeper_id'];
+                        $record->save();
+                    }),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
             ])
