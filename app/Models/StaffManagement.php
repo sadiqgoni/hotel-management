@@ -25,6 +25,9 @@ class StaffManagement extends Model
         'profile_picture',
         'address',
         'shift',
+        'next_of_kin_name',
+        'next_of_kin_address',
+        'next_of_kin_phone_number'
     ];
 
     protected $casts = [

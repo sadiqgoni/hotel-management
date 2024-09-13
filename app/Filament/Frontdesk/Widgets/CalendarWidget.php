@@ -31,7 +31,7 @@ class CalendarWidget extends FullCalendarWidget
                 ->start(Carbon::parse($reservation->check_in_date))
                 ->end(Carbon::parse($reservation->check_out_date)->addDay())
                 ->allDay(false)
-                ->url(ReservationResource::getUrl('view', ['record' => $reservation]), false)
+                // ->url(ReservationResource::getUrl('view', ['record' => $reservation]), false)
                 ->textColor('black')
                 ->borderColor('green')
                 ->backgroundColor($this->getReservationColor($reservation->status))

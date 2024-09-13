@@ -99,8 +99,6 @@ class RoomResource extends Resource
                                     ->placeholder('Auto-filled based on Room Type')
                                     ->readOnly(),
 
-
-
                                 Forms\Components\Toggle::make('status')
                                     ->label('Availability')
                                     ->default(1)
@@ -141,7 +139,7 @@ class RoomResource extends Resource
                     ->money('NGN'),
                 TextColumn::make('max_occupancy')
                     ->label('Max Occupancy')
-                    ->visible(fn() => $user->role !== 'Housekeeper') // Hide for Housekeeper
+                    ->visible(condition: fn() => $user->role !== 'Housekeeper') // Hide for Housekeeper
                     ->sortable(),
                 BadgeColumn::make('is_clean')
                     ->label('Cleaning Status')
@@ -150,6 +148,7 @@ class RoomResource extends Resource
                         '1' => 'success',
                         '2' => 'warning',
                     })
+                    ->default('0')
                     ->formatStateUsing(function ($state) {
                         return match ($state) {
                             0 => 'Dirty',
@@ -186,7 +185,6 @@ class RoomResource extends Resource
                         '0' => 'Unavailable',
                     ])
                     ->searchable(),
-                // Filter only for housekeepers: show rooms assigned to the current housekeeper
                 SelectFilter::make('assigned_rooms')
                     ->label('Assigned Rooms')
                     ->query(function (Builder $query) use ($user) {
@@ -202,7 +200,7 @@ class RoomResource extends Resource
                 Tables\Actions\Action::make('markAsDirtyAndAssignHousekeeper')
                     ->label('Mark as Dirty & Assign Housekeeper')
                     ->icon('heroicon-o-user-plus')
-                    ->visible(fn(Room $record) => $user->role === 'FrontDesk' && $record->is_clean == 1) // Only for clean rooms
+                    ->visible(fn(Room $record) => $user->role === 'FrontDesk')
                     ->action(function (Room $record, array $data) {
                         $record->is_clean = 0; // Mark as dirty
                         $record->status = 0;
@@ -216,6 +214,10 @@ class RoomResource extends Resource
                             ->required(),
                             TextInput::make('note')
                             ->label('Special Instructions')
+                            // ->action(function (Room $record, array $data) {
+                            //     $record->note = $data['note']; 
+                            //     $record->save();
+                            // })
                             ->placeholder('Add any notes or special instructions for the housekeeper')
                             ->nullable(),
                     ]),
@@ -254,11 +256,13 @@ class RoomResource extends Resource
                     ->visible(fn() => $user->role === 'FrontDesk'),
 
                 // View action (Visible to both)
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\ViewAction::make()
+                ->visible(condition: fn() => $user->role === 'FrontDesk'),
+
 
                 // Delete action (Visible only to Frontdesk)
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn() => $user->role === 'FrontDesk'),
+                    ->visible(condition: fn() => $user->role === 'FrontDesk'),
             ])
             ->bulkActions([]);
     }

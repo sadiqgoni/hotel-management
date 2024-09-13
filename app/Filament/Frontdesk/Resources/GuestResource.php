@@ -26,10 +26,12 @@ class GuestResource extends Resource
     protected static ?string $model = Guest::class;
 
 
-    protected static ?string $navigationGroup = 'Bookings & Guests Management';
+    protected static ?string $navigationGroup = 'Operations Management';
     protected static ?string $navigationLabel = 'Guest Records';
     protected static ?string $modelLabel = 'Guest Records';
     protected static ?string $navigationIcon = 'heroicon-o-identification';
+    protected static ?int $navigationSort = 4;
+
 
     public static function form(Form $form): Form
     {

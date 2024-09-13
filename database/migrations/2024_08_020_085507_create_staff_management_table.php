@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -23,9 +22,13 @@ return new class extends Migration
             $table->string('profile_picture')->nullable(); // URL for staff's profile picture (optional)
             $table->text('address')->nullable(); // Staff's address
             $table->string('shift')->nullable(); // Staff's working shift (e.g., morning, evening, night)
+            $table->string('next_of_kin_name')->nullable(); // Next of kin's full name
+            $table->text('next_of_kin_address')->nullable(); // Next of kin's address
+            $table->string('next_of_kin_phone_number')->nullable(); // Next of kin's contact number
+
             $table->timestamps(); // Created_at and updated_at
         });
-        
+
     }
 
     /**

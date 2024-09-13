@@ -12,8 +12,11 @@ class ListRooms extends ListRecords
 
     protected function getHeaderActions(): array
     {
+        $user = auth()->user();
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+            ->visible(condition: fn() => $user->role === 'FrontDesk'),
+
         ];
     }
 }

@@ -27,10 +27,12 @@ use Illuminate\Validation\ValidationException;
 class ReservationResource extends Resource
 {
     protected static ?string $model = Reservation::class;
-    protected static ?string $navigationGroup = 'Bookings & Guests Management';
+    protected static ?string $navigationGroup = 'Operations Management';
     protected static ?string $navigationIcon = 'heroicon-o-calendar';
     protected static ?string $navigationLabel = 'Manage Reservations';
     protected static ?string $modelLabel = 'Manage Reservations';
+    protected static ?int $navigationSort = 2;
+
 
     public static function form(Forms\Form $form): Forms\Form
     {

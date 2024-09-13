@@ -6,9 +6,11 @@ use App\Filament\Frontdesk\Resources\CheckInCheckOutResource\Pages;
 use App\Filament\Frontdesk\Resources\CheckInCheckOutResource\RelationManagers;
 use App\Models\CheckInCheckOut;
 use App\Models\Reservation;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -27,6 +29,8 @@ class CheckInCheckOutResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-arrow-left-end-on-rectangle';
     protected static ?string $navigationGroup = 'Operations Management';
     protected static ?string $navigationLabel = 'Check-In/Check-Out';
+    protected static ?int $navigationSort = 3;
+
 
     // FORM SCHEMA
     public static function form(Form $form): Form
@@ -55,7 +59,7 @@ class CheckInCheckOutResource extends Resource
 
                 DateTimePicker::make('check_in_time')
                     ->label('Check-In Time')
-                 
+
                     ->required(),
 
                 DateTimePicker::make('check_out_time')
@@ -117,7 +121,6 @@ class CheckInCheckOutResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
 
-                // Check In Action
                 Tables\Actions\Action::make('Check In')
                     ->icon('heroicon-o-arrow-left-end-on-rectangle')
                     ->action(function (CheckInCheckOut $record) {
@@ -128,12 +131,22 @@ class CheckInCheckOutResource extends Resource
 
                         // Ensure the reservation is confirmed and has not already been checked in or out
                         if ($record->reservation->status !== 'Confirmed') {
-                            Notification::make()->title('Reservation is not confirmed or has already been used!')->danger()->send();
+                            Notification::make()->title('Reservation is not confirmed')->danger()->send();
                             return;
                         }
 
-                        // Update check-in and reservation status
-                        $record->update([
+                        // Check if the room is clean
+                        if ($record->reservation->room->is_clean != 1) {
+                            Notification::make()
+                                ->title('Room is not cleaned yet!')
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
+                        // Update check-in time and reservation status
+                        $record->update(attributes: [
                             'check_in_time' => Carbon::now(),
                             'status' => 'Checked In',
                         ]);
@@ -152,7 +165,6 @@ class CheckInCheckOutResource extends Resource
                     ->requiresConfirmation()
                     ->visible(fn($record) => $record->status === 'Pending'),
 
-                // Check Out Action
                 Tables\Actions\Action::make('Check Out')
                     ->icon('heroicon-o-arrow-left-end-on-rectangle')
                     ->action(function (CheckInCheckOut $record) {
@@ -176,16 +188,18 @@ class CheckInCheckOutResource extends Resource
                         // Update the reservation status to 'Checked Out'
                         $record->reservation->update(['status' => 'Checked Out']);
 
-                        // Mark room as available again
-                        $record->reservation->room->update(['status' => 1]);
+                        // Mark room as dirty after check-out
+                        $record->reservation->room->update(['is_clean' => 0, 'status' => 0]);
 
                         Notification::make()
-                            ->title('Check-Out Successful!')
+                            ->title('Check-Out Successful! Room marked as dirty.')
                             ->success()
                             ->send();
                     })
                     ->requiresConfirmation()
                     ->visible(fn($record) => $record->status === 'Checked In'),
+
+
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

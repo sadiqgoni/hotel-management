@@ -47,7 +47,8 @@ class FrontdeskPanelProvider extends PanelProvider
                 'primary' => Color::hex('#166534'),
             ])
             ->navigationGroups([
-                'Front Desk',            
+                'Operations Management', 
+                'Rooms Management',           
             ])
             ->globalSearch(false)
             ->globalSearchKeyBindings(['command+', 'ctrl+k'])

@@ -41,31 +41,29 @@ class StaffManagementResource extends Resource
                                             ->label('Full Name')
                                             ->placeholder('Enter full name')
                                             ->maxLength(255),
-
+    
                                         Forms\Components\TextInput::make('email')
                                             ->required()
                                             ->label('Email Address')
                                             ->email()
                                             ->unique(StaffManagement::class, 'email', ignoreRecord: true)
                                             ->placeholder('Enter email address'),
-
+    
                                         Forms\Components\TextInput::make('phone_number')
                                             ->label('Phone Number')
                                             ->tel()
                                             ->maxLength(20)
                                             ->placeholder('Enter contact number'),
-
-
+    
                                         Forms\Components\FileUpload::make('profile_picture')
                                             ->label('Profile Picture')
                                             ->disk('public')
                                             ->image()
                                             ->directory('profile-pictures')  // Directory to store uploaded images
                                             ->placeholder('Upload a profile picture'),
-                                          
                                     ]),
                             ]),
-
+    
                         // Employment Details Section
                         Forms\Components\Section::make('Employment Details')
                             ->schema([
@@ -83,22 +81,29 @@ class StaffManagementResource extends Resource
                                             ])
                                             ->searchable()
                                             ->placeholder('Select role'),
-
+    
                                         Forms\Components\DatePicker::make('employment_date')
                                             ->label('Employment Date')
                                             ->required()
                                             ->placeholder('Select employment date'),
-
+    
                                         Forms\Components\DatePicker::make('termination_date')
                                             ->label('Termination Date')
                                             ->placeholder('Select termination date'),
-
-                                        Forms\Components\TextInput::make('shift')
+    
+                                        // Updated shift field as a select option
+                                        Forms\Components\Select::make('shift')
                                             ->label('Shift')
-                                            ->placeholder('Morning, Evening, Night'),
+                                            ->options([
+                                                'Morning' => 'Morning',
+                                                'Evening' => 'Evening',
+                                                'Night' => 'Night',
+                                            ])
+                                            ->searchable()
+                                            ->placeholder('Select shift'),
                                     ]),
                             ]),
-
+    
                         // Additional Information Section
                         Forms\Components\Section::make('Additional Information')
                             ->schema([
@@ -107,7 +112,7 @@ class StaffManagementResource extends Resource
                                         Forms\Components\Textarea::make('address')
                                             ->label('Address')
                                             ->placeholder('Enter address'),
-
+    
                                         Forms\Components\Select::make('status')
                                             ->label('Employment Status')
                                             ->options([
@@ -116,14 +121,40 @@ class StaffManagementResource extends Resource
                                                 'terminated' => 'Terminated',
                                             ])
                                             ->searchable()
-
                                             ->default('active')
+                                            ->required(),
+                                    ]),
+                            ]),
+    
+                        // Next of Kin Information Section
+                        Forms\Components\Section::make('Next of Kin Information')
+                            ->schema([
+                                Forms\Components\Grid::make(2)
+                                    ->schema([
+                                        Forms\Components\TextInput::make('next_of_kin_name')
+                                            ->label('Next of Kin Name')
+                                            ->placeholder('Enter next of kin name')
+                                            ->maxLength(255)
+                                            ->required(),
+    
+                                        Forms\Components\Textarea::make('next_of_kin_address')
+                                            ->label('Next of Kin Address')
+                                            ->placeholder('Enter next of kin address')
+                                            ->maxLength(500)
+                                            ->required(),
+    
+                                        Forms\Components\TextInput::make('next_of_kin_phone_number')
+                                            ->label('Next of Kin Phone Number')
+                                            ->tel()
+                                            ->placeholder('Enter next of kin phone number')
+                                            ->maxLength(20)
                                             ->required(),
                                     ]),
                             ]),
                     ]),
             ]);
     }
+    
 
     public static function table(Table $table): Table
     {

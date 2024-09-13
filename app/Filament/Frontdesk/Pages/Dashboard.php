@@ -1,33 +1,42 @@
 <?php
-
 namespace App\Filament\Frontdesk\Pages;
 
+use App\Filament\Frontdesk\Widgets\AvailableRooms;
 use App\Filament\Frontdesk\Widgets\StatsOverview;
+use App\Filament\Frontdesk\Widgets\LatestChecked;
 use Filament\Pages\Dashboard as BaseDashboard;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 
 class Dashboard extends BaseDashboard
 {
-    use BaseDashboard\Concerns\HasFiltersForm;
-
-    protected static ?int $navigationSort = -2;
-
-    protected static string $routePath = 'Dashboard';
-    protected static ?string $title = 'Dashboard';
+    public $activeCard = null;
 
     public function getWidgets(): array
     {
-        return [
-            AccountWidget::class,
-            FilamentInfoWidget::class,
-            StatsOverview::class
+        $widgets = [
+            StatsOverview::class,  // Always show the stats overview
         ];
+
+        // Add the corresponding table widget for the active card if it exists
+        if ($widget = $this->getTableWidgetForActiveCard()) {
+            $widgets[] = $widget;
+        }
+
+        return $widgets;
     }
 
-
-
-
-
-
+    protected function getTableWidgetForActiveCard(): ?string
+    {
+        switch ($this->activeCard) {
+            case 'CheckedInGuests':
+                return LatestChecked::class;
+            case 'AvailableRooms':
+                // Return the widget class for available rooms
+                return AvailableRooms::class;
+            case 'ActiveReservations':
+                // Return the widget class for active reservations
+                return AvailableRooms::class;
+            default:
+                return null;  // Return null if no active card
+        }
+    }
 }
