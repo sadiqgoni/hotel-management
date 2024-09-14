@@ -169,6 +169,7 @@ class RoomResource extends Resource
                     ->falseIcon('heroicon-o-x-circle')
                     ->sortable(),
                     TextColumn::make('note')
+                    
                     ->label('Special Instructions')
                     ->visible(fn() => $user->role !== 'FrontDesk') 
                     ->default('None')

@@ -18,7 +18,7 @@ class AvailableRooms extends BaseWidget
             ->columns([
                 TextColumn::make('room_number')->label('Room Number'),
                 TextColumn::make('roomType.name')->label('Room Type'),
-                TextColumn::make('price_per_night')->label('Price per Night'),
+                TextColumn::make('price_per_night')->label('Price per Night')->money('NGN')
             ]);
     }
 }
