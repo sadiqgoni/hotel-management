@@ -17,6 +17,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class LatestCheckedIn extends BaseWidget
 {
     protected int | string | array $columnSpan = 'full';
+    protected static ?string $heading = 'Checked In Guests';
 
 
     public function table(Table $table): Table

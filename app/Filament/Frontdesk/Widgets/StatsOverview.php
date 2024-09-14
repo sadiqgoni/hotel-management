@@ -16,8 +16,7 @@ use Illuminate\Support\HtmlString;
 
 class StatsOverview extends BaseWidget
 {
-    public $activeCard = 'active';  // Set "Checked-In" card as the default active card
-
+    public $activeCard = 'active';  // Default active card
     protected static ?string $pollingInterval = '5s';
 
     // Method to update active card
@@ -26,52 +25,61 @@ class StatsOverview extends BaseWidget
         $this->activeCard = $card;
     }
 
+    // Method to generate common card styles
+    protected function getCardStyles(string $cardType): array
+    {
+        $isActive = $this->activeCard === $cardType;
+
+        return [
+            'style' => $isActive
+                ? 'background-color: #ffffff; color: #007bff; border-radius: 12px; border: 2px solid #007bff; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);'
+                : 'background-color: #ffffff; color: #333; border-radius: 12px; border: 3px solid #28a745; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);',
+            'class' => 'cursor-pointer transition duration-200 ease-in-out transform hover:scale-105 hover:shadow-lg',
+            'wire:click' => "\$set('activeCard', '$cardType')",
+        ];
+    }
+
+    // Method to generate card components
+    protected function createCard(string $title, int $count, string $description, string $icon, string $cardType, string $event): Card
+    {
+        return Card::make($title, $count)
+            ->description($description)
+            ->descriptionIcon($icon)
+            ->color($this->activeCard === $cardType ? '' : 'success')
+            ->extraAttributes(array_merge($this->getCardStyles($cardType), [
+                'x-on:click' => "\$dispatch('$event')",
+            ]));
+    }
+
+    // Get statistics array
     protected function getStats(): array
     {
         return [
-            $this->getActiveReservations(),  // For Checked-In guests
-            $this->getCheckedOutReservations(),  // For Checked-Out guests
+            $this->getCheckedInReservations(),
+            $this->getCheckedOutReservations(),
+            $this->getConfirmedReservations(),
         ];
     }
 
     // Card for Active (Checked-In) Reservations
-    protected function getActiveReservations(): Card
+    protected function getCheckedInReservations(): Card
     {
-        $activeReservationsCount = CheckInCheckOut::where('status', 'Checked In')->count();
-
-        return Card::make('Checked-In Guests', $activeReservationsCount)
-            ->description('Guests currently checked in')
-            ->descriptionIcon('heroicon-o-calendar')
-            // ->iconColor($this->activeCard === 'active' ? 'success' : 'primary')  // Color based on active/inactive state
-            // ->iconSize(24)  // Larger icon for better visibility
-            ->extraAttributes([
-                'style' => $this->activeCard === 'active'
-                    ? 'background-color: #e2e8f0; color: #333; border-radius: 12px; border: 3px solid #28a745; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);' 
-                    : 'background-color: #ffffff; color: #007bff; border-radius: 12px; border: 2px solid #007bff; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);',
-                'class' => 'transition duration-200 ease-in-out transform hover:scale-105 hover:shadow-lg',  // Hover effect
-                'wire:click' => "\$set('activeCard', 'active')",
-                'x-on:click' => "\$dispatch('showCheckedInGuestsTable')",  // Dispatch event to show "Checked-In" table
-            ]);
+        $count = CheckInCheckOut::where('status', 'Checked In')->count();
+        return $this->createCard('Checked-In Guests', $count, 'Guests currently checked in', 'heroicon-o-calendar', 'active', 'showCheckedInGuestsTable');
     }
 
     // Card for Checked-Out Reservations
     protected function getCheckedOutReservations(): Card
     {
-        $checkedOutReservationsCount = CheckInCheckOut::where('status', 'Checked Out')->count();
+        $count = CheckInCheckOut::where('status', 'Checked Out')->count();
+        return $this->createCard('Checked-Out Guests', $count, 'Guests who have checked out', 'heroicon-o-check', 'checkedOut', 'showCheckedOutGuestsTable');
+    }
 
-        return Card::make('Checked-Out Guests', $checkedOutReservationsCount)
-            ->description('Guests who have checked out')
-            ->descriptionIcon('heroicon-o-check')
-            // ->iconColor($this->activeCard === 'checkedOut' ? 'success' : 'primary')  // Color based on active/inactive state
-            // ->iconSize(24)  // Larger icon for better visibility
-            ->extraAttributes([
-                'style' => $this->activeCard === 'checkedOut'
-                ? 'background-color: #e2e8f0; color: #333; border-radius: 12px; border: 3px solid #28a745; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);' 
-                : 'background-color: #ffffff; color: #007bff; border-radius: 12px; border: 2px solid #007bff; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);',
-                'class' => 'transition duration-200 ease-in-out transform hover:scale-105 hover:shadow-lg',  // Hover effect
-                'wire:click' => "\$set('activeCard', 'checkedOut')",
-                'x-on:click' => "\$dispatch('showCheckedOutGuestsTable')",  // Dispatch event to show "Checked-Out" table
-            ]);
+    // Card for Confirmed Reservations
+    protected function getConfirmedReservations(): Card
+    {
+        $count = Reservation::where('status', 'Confirmed')->count();
+        return $this->createCard('Confirmed Reservations', $count, 'Confirmed Reservations', 'heroicon-o-calendar-days', 'confirmedReservation', 'showConfirmedReservationTable');
     }
 }
 
@@ -204,19 +212,19 @@ class StatsOverview extends BaseWidget
 //     // }
 
 //     // // 2. Active Reservations (Confirmed and Checked-In)
-//     // protected function getActiveReservations()
-//     // {
-//     //     $title = 'Active Reservations';
+    // protected function getActiveReservations()
+    // {
+    //     $title = 'Active Reservations';
 
-//     //     // Query to get the total number of active reservations (confirmed + checked in)
-//     //     $activeReservationsCount = Reservation::whereIn('status', ['Confirmed', 'Checked In'])
-//     //         ->count();
+    //     // Query to get the total number of active reservations (confirmed + checked in)
+    //     $activeReservationsCount = Reservation::whereIn('status', ['Confirmed', 'Checked In'])
+    //         ->count();
 
-//     //     return Stat::make($title, $activeReservationsCount)
-//     //         ->description('Confirmed or Checked-In Reservations')
-//     //         ->descriptionIcon('heroicon-o-calendar-days')
-//     //         ->color(Color::Indigo);
-//     // }
+    //     return Stat::make($title, $activeReservationsCount)
+    //         ->description('Confirmed or Checked-In Reservations')
+    //         ->descriptionIcon('heroicon-o-calendar-days')
+    //         ->color(Color::Indigo);
+    // }
 
 //     // 3. Available Rooms (Rooms not booked)
 //     // protected function getAvailableRooms()
