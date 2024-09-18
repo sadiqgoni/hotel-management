@@ -24,6 +24,7 @@ class StaffManagement extends Model
         'termination_date',
         'profile_picture',
         'address',
+        'date_of_birth',
         'shift',
         'next_of_kin_name',
         'next_of_kin_address',

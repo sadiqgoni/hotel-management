@@ -8,9 +8,11 @@ use Filament\Resources\Pages\ListRecords;
 use Filament\Resources\Pages\ListRecords\Tab;
 use Filament\Pages\Concerns\ExposesTableToWidgets;
 use Filament\Support\Colors\Color;
+use Filament\Tables\Columns\TextColumn;
 
 class ListReservations extends ListRecords
 {
+
     protected static string $resource = ReservationResource::class;
 
     protected function getHeaderActions(): array

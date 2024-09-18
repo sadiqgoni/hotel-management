@@ -7,6 +7,7 @@ use App\Filament\Management\Resources\StaffManagementResource\RelationManagers;
 use App\Models\StaffManagement;
 use Filament\Forms;
 use Filament\Forms\Components\Card;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -41,20 +42,21 @@ class StaffManagementResource extends Resource
                                             ->label('Full Name')
                                             ->placeholder('Enter full name')
                                             ->maxLength(255),
-    
+
                                         Forms\Components\TextInput::make('email')
                                             ->required()
                                             ->label('Email Address')
                                             ->email()
                                             ->unique(StaffManagement::class, 'email', ignoreRecord: true)
                                             ->placeholder('Enter email address'),
-    
+
                                         Forms\Components\TextInput::make('phone_number')
                                             ->label('Phone Number')
                                             ->tel()
                                             ->maxLength(20)
                                             ->placeholder('Enter contact number'),
-    
+                                        DatePicker::make('date_of_birth')
+                                            ->label('Date of Birth'),
                                         Forms\Components\FileUpload::make('profile_picture')
                                             ->label('Profile Picture')
                                             ->disk('public')
@@ -63,7 +65,7 @@ class StaffManagementResource extends Resource
                                             ->placeholder('Upload a profile picture'),
                                     ]),
                             ]),
-    
+
                         // Employment Details Section
                         Forms\Components\Section::make('Employment Details')
                             ->schema([
@@ -81,16 +83,16 @@ class StaffManagementResource extends Resource
                                             ])
                                             ->searchable()
                                             ->placeholder('Select role'),
-    
+
                                         Forms\Components\DatePicker::make('employment_date')
                                             ->label('Employment Date')
                                             ->required()
                                             ->placeholder('Select employment date'),
-    
+
                                         Forms\Components\DatePicker::make('termination_date')
                                             ->label('Termination Date')
                                             ->placeholder('Select termination date'),
-    
+
                                         // Updated shift field as a select option
                                         Forms\Components\Select::make('shift')
                                             ->label('Shift')
@@ -103,7 +105,7 @@ class StaffManagementResource extends Resource
                                             ->placeholder('Select shift'),
                                     ]),
                             ]),
-    
+
                         // Additional Information Section
                         Forms\Components\Section::make('Additional Information')
                             ->schema([
@@ -112,7 +114,7 @@ class StaffManagementResource extends Resource
                                         Forms\Components\Textarea::make('address')
                                             ->label('Address')
                                             ->placeholder('Enter address'),
-    
+
                                         Forms\Components\Select::make('status')
                                             ->label('Employment Status')
                                             ->options([
@@ -125,7 +127,7 @@ class StaffManagementResource extends Resource
                                             ->required(),
                                     ]),
                             ]),
-    
+
                         // Next of Kin Information Section
                         Forms\Components\Section::make('Next of Kin Information')
                             ->schema([
@@ -136,13 +138,13 @@ class StaffManagementResource extends Resource
                                             ->placeholder('Enter next of kin name')
                                             ->maxLength(255)
                                             ->required(),
-    
+
                                         Forms\Components\Textarea::make('next_of_kin_address')
                                             ->label('Next of Kin Address')
                                             ->placeholder('Enter next of kin address')
                                             ->maxLength(500)
                                             ->required(),
-    
+
                                         Forms\Components\TextInput::make('next_of_kin_phone_number')
                                             ->label('Next of Kin Phone Number')
                                             ->tel()
@@ -154,21 +156,21 @@ class StaffManagementResource extends Resource
                     ]),
             ]);
     }
-    
+
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
                 TextColumn::make('id')
-                ->label('ID')
-                ->searchable()
-                ->sortable(),
+                    ->label('ID')
+                    ->searchable()
+                    ->sortable(),
                 ImageColumn::make('profile_picture')
-                ->label('Profile Picture')
-                ->rounded() // Optionally make the image rounded
-                ->width(50) // Set width of the image
-                ->height(50), // Set height of the image
+                    ->label('Profile Picture')
+                    ->rounded() // Optionally make the image rounded
+                    ->width(50) // Set width of the image
+                    ->height(50), // Set height of the image
 
 
 
@@ -196,8 +198,13 @@ class StaffManagementResource extends Resource
                     ->label('Phone')
                     ->sortable(),
 
-                TextColumn::make('shift')
-                    ->label('Shift'),
+                 BadgeColumn::make('shift')
+                    ->label('Shift')
+                    ->colors([
+                        'success' => 'Morning',
+                        'warning' => 'Evening',
+                        'grey' => 'Night',
+                    ]),
 
                 BadgeColumn::make('status')
                     ->label('Status')

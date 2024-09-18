@@ -15,7 +15,7 @@ class ListRooms extends ListRecords
         $user = auth()->user();
         return [
             Actions\CreateAction::make()
-            ->visible(condition: fn() => $user->role === 'FrontDesk'),
+            ->hidden(condition: fn() => $user->role === 'Housekeeper'),
 
         ];
     }

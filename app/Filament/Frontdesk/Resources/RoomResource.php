@@ -201,7 +201,9 @@ class RoomResource extends Resource
                 Tables\Actions\Action::make('markAsDirtyAndAssignHousekeeper')
                     ->label('Mark as Dirty & Assign Housekeeper')
                     ->icon('heroicon-o-user-plus')
-                    ->visible(fn(Room $record) => $user->role === 'FrontDesk')
+                    ->hidden(condition: fn() => $user->role === 'Housekeeper')
+
+                    // ->visible(fn(Room $record): bool => $user->role === 'FrontDesk')
                     ->action(function (Room $record, array $data) {
                         $record->is_clean = 0; // Mark as dirty
                         $record->status = 0;
@@ -227,6 +229,8 @@ class RoomResource extends Resource
                 Tables\Actions\Action::make('startCleaning')
                     ->label('Start Cleaning')
                     ->icon('heroicon-o-play')
+                    //  ->hidden(condition: fn() => $user->role === 'Housekeeper')
+
                     ->visible(fn(Room $record) => $user->role === 'Housekeeper' && $record->is_clean == 0 && $record->housekeeper_id == $user->id) // Only for assigned dirty rooms
                     ->action(function (Room $record) {
                         $record->is_clean = 2; // Mark as "In Progress"
@@ -254,16 +258,18 @@ class RoomResource extends Resource
                     }),
                 // Edit action (Visible only to Frontdesk)
                 Tables\Actions\EditAction::make()
-                    ->visible(fn() => $user->role === 'FrontDesk'),
+                ->hidden(condition: fn() => $user->role === 'Housekeeper'),
+
+                    // ->visible(fn() => $user->role === 'FrontDesk'),
 
                 // View action (Visible to both)
                 Tables\Actions\ViewAction::make()
-                ->visible(condition: fn() => $user->role === 'FrontDesk'),
+                ->hidden(condition: fn() => $user->role === 'Housekeeper'),
 
 
                 // Delete action (Visible only to Frontdesk)
                 Tables\Actions\DeleteAction::make()
-                    ->visible(condition: fn() => $user->role === 'FrontDesk'),
+                ->hidden(condition: fn() => $user->role === 'Housekeeper'),
             ])
             ->bulkActions([]);
     }

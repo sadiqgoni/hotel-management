@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->date('employment_date')->nullable(); // Date when staff was hired
             $table->date('termination_date')->nullable(); // Date when staff left (optional)
             $table->string('profile_picture')->nullable(); // URL for staff's profile picture (optional)
+            $table->date('date_of_birth')->nullable();
             $table->text('address')->nullable(); // Staff's address
             $table->string('shift')->nullable(); // Staff's working shift (e.g., morning, evening, night)
             $table->string('next_of_kin_name')->nullable(); // Next of kin's full name

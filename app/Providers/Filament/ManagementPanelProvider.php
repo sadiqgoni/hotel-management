@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Management\Resources\StaffManagementResource;
 use App\Filament\Management\Resources\UserResource;
+use App\Filament\Management\Resources\CouponManagementResource;
 use App\Http\Middleware\RoleRedirect;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -37,7 +38,8 @@ class ManagementPanelProvider extends PanelProvider
                 MenuItem::make()
                     ->label('Front Desk')
                     ->url('/frontdesk')
-                    ->icon('heroicon-o-users'),
+                    ->icon('heroicon-o-users')
+                    ->visible(fn(): bool => auth()->user()->role === 'Manager')
             ])
             ->resources($this->getResources())
             ->pages($this->getPages())
@@ -67,7 +69,8 @@ class ManagementPanelProvider extends PanelProvider
     {
         return [
             UserResource::class,
-            StaffManagementResource::class
+            StaffManagementResource::class,
+            CouponManagementResource::class
         ];
     }
     protected function getPages(): array

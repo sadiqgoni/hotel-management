@@ -13,10 +13,15 @@ class RoleRedirect
         $panel = filament()->getCurrentPanel()->getId();
 
 
+        if ($user->role === 'Manager') {
+            return $next($request);
+        }
+
         // If the user is not authenticated, redirect to login
         if (!$user) {
             return redirect('/login');
         }
+
 
         switch ($user->role) {
             case 'Manager':

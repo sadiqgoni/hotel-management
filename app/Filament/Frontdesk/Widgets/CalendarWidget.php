@@ -39,6 +39,7 @@ class CalendarWidget extends FullCalendarWidget
                     'guest_name' => $reservation->guest->name,
                     'room_type' => $reservation->room ? $reservation->room->room_type : 'N/A',
                     'reservation_status' => $reservation->status,
+                    'class' => 'cursor-pointer transition duration-200 ease-in-out transform hover:scale-105 hover:shadow-lg',
                 ])
                 ->toArray();
         })->all();
