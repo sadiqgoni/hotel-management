@@ -9,6 +9,7 @@ use App\Models\Room;
 use Filament\Forms;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -79,12 +80,11 @@ class ReservationResource extends Resource
                     ->description('Provide reservation details including room and stay duration.')
                     ->completedIcon('heroicon-m-check-circle')  // Completed icon
                     ->columns(2)
-
                     ->schema([
                         Select::make('room_id')
                             ->label('Select Room')
                             ->searchable()
-                            ->options(Room::where('status', true)->pluck('room_number', 'id')->toArray())
+                            ->options(Room::all()->pluck('room_number', 'id')->toArray())
                             ->placeholder('Choose a room')
                             ->reactive()
                             ->afterStateUpdated(function ($state, callable $get, callable $set) {
@@ -94,16 +94,48 @@ class ReservationResource extends Resource
                                     static::updateTotalAmount($get, $set);
                                 }
                             }),
-
+                    
                         TextInput::make('price_per_night')->label('Price per Night')->readOnly(),
-                        DatePicker::make('check_in_date')->label('Check-In Date')->required()->reactive()->afterStateUpdated(function ($state, callable $get, callable $set) {
-                            static::updateTotalAmount($get, $set);
-                        }),
-                        DatePicker::make('check_out_date')->label('Check-Out Date')->required()->afterOrEqual('check_in_date')->reactive()->afterStateUpdated(function ($state, callable $get, callable $set) {
-                            static::updateTotalAmount($get, $set);
-                        }),
+                    
+                        DatePicker::make('check_in_date')
+                            ->label('Check-In Date')
+                            ->required()
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, callable $get, callable $set) {
+                                static::updateTotalAmount($get, $set);
+                                static::updateNumberOfNights($get, $set);  // Update number of nights
+                            }),
+                    
+                        DatePicker::make('check_out_date')
+                            ->label('Check-Out Date')
+                            ->required()
+                            ->afterOrEqual('check_in_date')
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, callable $get, callable $set) {
+                                static::updateTotalAmount($get, $set);
+                                static::updateNumberOfNights($get, $set);  // Update number of nights
+                            }),
+                    
                         TextInput::make('number_of_people')->label('Number of People')->required(),
-                    ]),
+                    
+                        // New badge for displaying number of nights
+                        TextInput::make('number_of_nights')
+                        ->readOnly()
+                            ->label('Number of Nights')
+                            // ->icon('heroicon-o-calendar')  // You can choose any icon
+                            // ->color('success')  // Change color based on UI preference
+                            ->reactive()
+                            // ->content(fn (callable $get) => 
+                            //     $checkInDate = $get('check_in_date');
+                            //     $checkOutDate = $get('check_out_date');
+                            //     if ($checkInDate && $checkOutDate) {
+                            //         $checkIn = \Carbon\Carbon::parse($checkInDate);
+                            //         $checkOut = \Carbon\Carbon::parse($checkOutDate);
+                            //         return $checkIn->diffInDays($checkOut) . ' Night(s)';
+                            //     }
+                            //     return 'Select dates';
+                            // }),
+                        ]),                    
 
                 // Step 3: Apply Discounts
                 Step::make('Apply Discounts')
@@ -139,7 +171,9 @@ class ReservationResource extends Resource
                                 'mobile' => 'Mobile Payment',
                             ])
                             ->required(),
-                        TextInput::make('amount_paid')->label('Amount Paid')->numeric()->reactive()->afterStateUpdated(function ($state, callable $get, callable $set) {
+                        TextInput::make('amount_paid')->label('Amount Paid')
+                        ->reactive()
+                        ->afterStateUpdated(function ($state, callable $get, callable $set) {
                             static::checkPaymentStatus($get, $set);
                         }),
                         TextInput::make('remaining_balance')->label('Remaining Balance')->readOnly(),
@@ -184,6 +218,22 @@ class ReservationResource extends Resource
             $set('total_amount', 0); // Reset total amount if invalid
         }
     }
+    public static function updateNumberOfNights(callable $get, callable $set)
+{
+    $checkInDate = $get('check_in_date');
+    $checkOutDate = $get('check_out_date');
+
+    if ($checkInDate && $checkOutDate) {
+        $checkIn = \Carbon\Carbon::parse($checkInDate);
+        $checkOut = \Carbon\Carbon::parse($checkOutDate);
+
+        $numberOfNights = $checkIn->diffInDays($checkOut);
+        $set('number_of_nights', $numberOfNights);
+    } else {
+        $set('number_of_nights', 0); // Default to 0 if dates aren't set
+    }
+}
+
     public static function applyCoupon($coupon, callable $get, callable $set)
     {
         $totalAmount = $get('total_amount');
@@ -423,17 +473,17 @@ class ReservationResource extends Resource
     //     // Step 2: Room Selection
     //     Step::make('Room Selection')
     //         ->schema([
-    //             Select::make('room_id')
-    //                 ->label('Room')
-    //                 ->searchable()
-    //                 ->options(Room::all()->pluck('room_number', 'id')->toArray())
-    //                 ->required()
-    //                 ->placeholder('Select Room')
-    //                 ->reactive()
-    //                 ->afterStateUpdated(function ($state, callable $set) {
-    //                     $room = Room::find($state);
-    //                     $set('price_per_night', $room?->price_per_night ?? 0);
-    //                 }),
+                // Select::make('room_id')
+                //     ->label('Room')
+                //     ->searchable()
+                //     ->options(Room::all()->pluck('room_number', 'id')->toArray())
+                //     ->required()
+                //     ->placeholder('Select Room')
+                //     ->reactive()
+                //     ->afterStateUpdated(function ($state, callable $set) {
+                //         $room = Room::find($state);
+                //         $set('price_per_night', $room?->price_per_night ?? 0);
+                //     }),
 
     //         ]),
 
