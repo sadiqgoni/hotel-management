@@ -9,7 +9,9 @@ use App\Filament\Frontdesk\Resources\GuestResource;
 use App\Filament\Frontdesk\Resources\ReservationResource;
 use App\Filament\Frontdesk\Resources\RoomResource;
 use App\Filament\Frontdesk\Resources\RoomTypeResource;
+use App\Filament\Housekeeper\Resources\MaintenanceRequestResource;
 use App\Http\Middleware\RoleRedirect;
+use App\Models\MaintenanceRequest;
 use App\Models\RoomType;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -106,7 +108,9 @@ class FrontdeskPanelProvider extends PanelProvider
             GuestResource::class,
             ReservationResource::class,
             RoomResource::class,
-            RoomTypeResource::class
+            RoomTypeResource::class,
+            MaintenanceRequestResource::class
+
 
         ];
     }

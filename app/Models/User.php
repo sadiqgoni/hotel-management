@@ -52,4 +52,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(Room::class, 'housekeeper_id');
     }
+    public function maintenanceRequest(): HasMany
+    {
+        return $this->hasMany(MaintenanceRequest::class,);
+    }
 }

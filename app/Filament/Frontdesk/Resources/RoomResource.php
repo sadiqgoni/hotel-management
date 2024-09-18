@@ -115,8 +115,7 @@ class RoomResource extends Resource
 
     public static function table(Table $table): Table
     {
-        $user = auth()->user(); // Get the current logged-in user
-
+        $user = auth()->user(); 
         return $table
             ->columns([
                 TextColumn::make('id')

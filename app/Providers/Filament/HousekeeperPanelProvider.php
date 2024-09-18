@@ -3,7 +3,9 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Frontdesk\Resources\RoomResource;
+use App\Filament\Housekeeper\Resources\MaintenanceRequestResource;
 use App\Http\Middleware\RoleRedirect;
+use App\Models\MaintenanceRequest;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -61,6 +63,7 @@ class HousekeeperPanelProvider extends PanelProvider
     {
         return [
             RoomResource::class,
+            MaintenanceRequestResource::class
 
         ];
     }
