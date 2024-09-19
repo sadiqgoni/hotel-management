@@ -14,21 +14,21 @@ class Guest extends Model
         'phone_number',
         'preferences',
         'nin_number',
-        'bonus_code'
+        'bonus_code',
+        'stay_count',
     ];
 
     public function reservations()
     {
         return $this->hasMany(Reservation::class);
     }
-
-    public function laundries()
+    public function groupReservations()
     {
-        return $this->hasMany(Laundry::class);
+        return $this->hasMany(GroupReservation::class, 'primary_guest_id');
+    }
+    public function reservationWaitlist()
+    {
+        return $this->hasMany(ReservationWaitlist::class);
     }
 
-    public function restaurantOrders()
-    {
-        return $this->hasMany(RestaurantOrder::class);
-    }
 }

@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('preferences')->nullable();
             $table->string('nin_number')->nullable();
             $table->string('bonus_code')->nullable();
+            $table->integer(column: 'stay_count')->nullable()->default(0);
+
             $table->timestamps();
         });
     }

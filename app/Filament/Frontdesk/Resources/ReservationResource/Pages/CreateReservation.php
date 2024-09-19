@@ -4,6 +4,7 @@ namespace App\Filament\Frontdesk\Resources\ReservationResource\Pages;
 
 use App\Filament\Frontdesk\Resources\ReservationResource;
 use App\Models\CouponManagement;
+use App\Models\Guest;
 use App\Models\Room;
 use Filament\Actions;
 use Illuminate\Support\Facades\Log;
@@ -39,6 +40,19 @@ class CreateReservation extends CreateRecord
                 }
             }
         }
+
+        $guestId = $data['guest_id'] ?? null;
+
+        if ($guestId) {
+            $guest = Guest::find($guestId);
+        
+            if ($guest) {
+
+                $guest->increment('stay_count'); // Increment the stay count
+                $guest->save(); // Ensure the guest record is saved after incrementing
+            } 
+        }
+        
 
         // Perform any other actions needed after saving the reservation
         $roomId = $data['room_id'];

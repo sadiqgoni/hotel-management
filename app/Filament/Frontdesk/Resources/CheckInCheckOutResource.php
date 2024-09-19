@@ -27,9 +27,9 @@ class CheckInCheckOutResource extends Resource
 {
     protected static ?string $model = CheckInCheckOut::class;
     protected static ?string $navigationIcon = 'heroicon-o-arrow-left-end-on-rectangle';
-    protected static ?string $navigationGroup = 'Operations Management';
+    protected static ?string $navigationGroup = 'Guest Management';
     protected static ?string $navigationLabel = 'Check-In/Check-Out';
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 2;
 
 
     // FORM SCHEMA

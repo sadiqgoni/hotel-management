@@ -5,8 +5,10 @@ namespace App\Providers\Filament;
 use App\Filament\Frontdesk\Pages\Dashboard;
 use App\Filament\Frontdesk\Pages\ReservationCalendar;
 use App\Filament\Frontdesk\Resources\CheckInCheckOutResource;
+use App\Filament\Frontdesk\Resources\GroupReservationResource;
 use App\Filament\Frontdesk\Resources\GuestResource;
 use App\Filament\Frontdesk\Resources\ReservationResource;
+use App\Filament\Frontdesk\Resources\ReservationWaitlistResource;
 use App\Filament\Frontdesk\Resources\RoomResource;
 use App\Filament\Frontdesk\Resources\RoomTypeResource;
 use App\Filament\Housekeeper\Resources\MaintenanceRequestResource;
@@ -109,7 +111,9 @@ class FrontdeskPanelProvider extends PanelProvider
             ReservationResource::class,
             RoomResource::class,
             RoomTypeResource::class,
-            MaintenanceRequestResource::class
+            MaintenanceRequestResource::class,
+            GroupReservationResource::class,
+            ReservationWaitlistResource::class
 
 
         ];
@@ -119,6 +123,7 @@ class FrontdeskPanelProvider extends PanelProvider
         return [
             Dashboard::class,
             ReservationCalendar::class
+
         ];
     }
 }

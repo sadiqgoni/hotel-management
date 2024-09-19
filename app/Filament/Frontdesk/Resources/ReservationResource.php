@@ -6,6 +6,7 @@ use App\Models\CouponManagement;
 use App\Models\Reservation;
 use App\Models\Guest;
 use App\Models\Room;
+use Closure;
 use Filament\Forms;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
@@ -32,8 +33,8 @@ class ReservationResource extends Resource
     protected static ?string $model = Reservation::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard';
-    protected static ?string $navigationGroup = 'Operations Management';
-    protected static ?int $navigationSort = 2;
+    protected static ?string $navigationGroup = 'Reservation Management';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Forms\Form $form): Forms\Form
     {
@@ -41,30 +42,49 @@ class ReservationResource extends Resource
             Wizard::make([
                 // Step 1: Guest Information
                 Step::make('Guest Information')
-                    ->icon('heroicon-o-user')
-                    ->description('Enter guest details or select an existing guest.')
-                    ->completedIcon('heroicon-m-check-circle')
-                    ->schema([
-                        Select::make('guest_id')
-                            ->label('Select Guest')
-                            ->preload()
-                            ->searchable()
-                            ->options(Guest::pluck('name', 'id')->toArray())
-                            ->placeholder('Select an existing guest or create a new one')
-                            ->createOptionForm([
-                                TextInput::make('name')->label('Full Name')->required()->maxLength(255),
-                                TextInput::make('phone_number')->label('Phone Number')->unique(Guest::class, 'phone_number')->maxLength(255),
-                                TextInput::make('nin_number')->label('NIN Number')->unique(Guest::class, 'nin_number')->maxLength(255),
-                                Textarea::make('preferences')->label('Preferences')->placeholder('E.g., Halal food, quiet room'),
-                            ])
-                            ->createOptionAction(function (Action $action) {
-                                return $action->modalHeading('Create New Guest')->modalButton('Add Guest')->modalWidth('lg');
-                            })
-                            ->createOptionUsing(function ($data) {
-                                return Guest::create($data)->id;
-                            }),
-                    ]),
-
+                ->icon('heroicon-o-user')
+                ->description('Enter guest details or select an existing guest.')
+                ->completedIcon('heroicon-m-check-circle')
+                ->schema([
+                    Select::make('guest_id')
+                        ->label('Select Guest')
+                        ->preload()
+                        ->searchable()
+                        ->options(Guest::pluck('name', 'id')->toArray())
+                        ->placeholder('Select an existing guest or create a new one')
+                        ->reactive()  // Allows for dynamic updates when a guest is selected
+                        ->afterStateUpdated(function ($state, callable $get, callable $set) {
+                            // Find the selected guest
+                            $guest = Guest::find($state);
+                            
+                            if ($guest && $guest->stay_count >= 5) {
+                                // Set a placeholder or reminder message for frequent guests
+                                $set('frequent_guest_message', "{$guest->name}  has stayed {$guest->stay_count} times and is eligible for a discount.");
+                            } else {
+                                // Clear the message if guest does not qualify
+                                $set('frequent_guest_message', null);
+                            }
+                        })
+                        ->createOptionForm([
+                            TextInput::make('name')->label('Full Name')->required()->maxLength(255),
+                            TextInput::make('phone_number')->label('Phone Number')->unique(Guest::class, 'phone_number')->maxLength(255),
+                            TextInput::make('nin_number')->label('NIN Number')->unique(Guest::class, 'nin_number')->maxLength(255),
+                            Textarea::make('preferences')->label('Preferences')->placeholder('E.g., Halal food, quiet room'),
+                        ])
+                        ->createOptionAction(function (Action $action) {
+                            return $action->modalHeading('Create New Guest')->modalButton('Add Guest')->modalWidth('lg');
+                        })
+                        ->createOptionUsing(function ($data) {
+                            return Guest::create($data)->id;
+                        }),
+            
+                    // Show a message if the guest is frequent
+                    Placeholder::make('frequent_guest_message')
+                        ->label('Frequent Guest')
+                        ->content(fn ($get) => $get('frequent_guest_message'))
+                        ->visible(fn ($get) => !is_null($get('frequent_guest_message'))),  // Only visible if there's a message
+                ]),
+            
                 // Step 2: Reservation Details
                 Step::make('Reservation Details')
                     ->icon('heroicon-o-calendar')
@@ -73,18 +93,22 @@ class ReservationResource extends Resource
                     ->columns(2)
                     ->schema([
                         Select::make('room_id')
-                            ->label('Select Room')
-                            ->searchable()
-                            ->options(Room::all()->pluck('room_number', 'id')->toArray())
-                            ->placeholder('Choose a room')
-                            ->reactive()
-                            ->afterStateUpdated(function ($state, callable $get, callable $set) {
-                                $room = Room::find($state);
-                                if ($room) {
-                                    $set('price_per_night', $room->price_per_night ?? 0);
-                                    static::updateTotalAmount($get, $set);
-                                }
-                            }),
+                        ->label('Select Room')
+                        ->searchable()
+                        ->options(Room::where('status', 1)->pluck('room_number', 'id')->toArray()) // Only available rooms
+                        ->placeholder('Choose a room')
+                        ->reactive()
+                        ->afterStateUpdated(function ($state, callable $get, callable $set) {
+                            $room = Room::find($state);
+                            if ($room) {
+                                $set('price_per_night', $room->price_per_night ?? 0);
+                                static::updateTotalAmount($get, $set);
+                            }
+                        }),
+                    TextInput::make('price_per_night')
+                        ->label('Price per Night')
+                        ->readOnly(),
+                    
 
                         TextInput::make('price_per_night')->label('Price per Night')->readOnly(),
 
@@ -245,6 +269,10 @@ class ReservationResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                ->label('ID')
+                ->searchable()
+                ->sortable(),
                 TextColumn::make('guest.name')
                     ->label('Guest Name')
                     ->sortable()

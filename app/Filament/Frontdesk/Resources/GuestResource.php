@@ -26,11 +26,11 @@ class GuestResource extends Resource
     protected static ?string $model = Guest::class;
 
 
-    protected static ?string $navigationGroup = 'Operations Management';
+    protected static ?string $navigationGroup = 'Guest Management';
     protected static ?string $navigationLabel = 'Guest Records';
     protected static ?string $modelLabel = 'Guest Records';
     protected static ?string $navigationIcon = 'heroicon-o-identification';
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 1;
 
 
     public static function form(Form $form): Form
@@ -76,36 +76,44 @@ class GuestResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('id')
-                    ->sortable()
-                    ->searchable(),
-                TextColumn::make('name')
-                    ->label('Full Name')
-                    ->sortable()
-                    ->searchable(),
-                TextColumn::make('phone_number')
-                    ->label('Phone Number')
-                    ->sortable()
-                    ->searchable(),
-                TextColumn::make('nin_number')
-                    ->label('NIN Number')
-                    ->sortable()
-                    ->searchable(),
-                TextColumn::make('bonus_code')
-                    ->label('Bonus Code')
-                    ->sortable()
-                    ->searchable(),
-                TextColumn::make('preferences')
-                    ->label('Preferences')
-                    ->sortable()
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                ->sortable()
+                ->searchable(),
+            TextColumn::make('name')
+                ->label('Full Name')
+                ->sortable()
+                ->searchable(),
+            TextColumn::make('phone_number')
+                ->label('Phone Number')
+                ->sortable()
+                ->searchable(),
+            TextColumn::make('nin_number')
+                ->label('NIN Number')
+                ->sortable()
+                ->searchable(),
+            TextColumn::make('bonus_code')
+                ->label('Bonus Code')
+                ->sortable()
+                ->searchable(),
+            TextColumn::make('preferences')
+                ->label('Preferences')
+                ->sortable()
+                ->searchable(),
+                BadgeColumn::make('stay_count')
+                ->label('Stay Count')
+                ->sortable()
+                ->colors([
+                    'success' => fn ($state) => $state >= 5, // Show badge if 5+ stays
+                ])
+                ->searchable(),
+ 
+                TextColumn::make('created_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+            TextColumn::make('updated_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //

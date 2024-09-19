@@ -30,6 +30,10 @@ class CouponManagement extends Model
     {
         return $this->hasMany(Reservation::class);
     }
+    public function groupReservation()
+    {
+        return $this->hasMany(GroupReservation::class);
+    }
     // Accessor for checking if a coupon is valid
     public function getIsValidAttribute()
     {

@@ -37,4 +37,12 @@ class Room extends Model
     {
         return $this->belongsTo(User::class, 'housekeeper_id');
     }
+    public function groupReservation()
+    {
+        return $this->hasMany(GroupReservation::class);
+    }
+    public function reservationWaitlist()
+    {
+        return $this->hasMany(ReservationWaitlist::class);
+    }
 }
