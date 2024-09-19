@@ -18,6 +18,8 @@ class Reservation extends Model
         'payment_method',
         'coupon_management_id',
         'coupon_discount',
+        'frequent_guest_message',
+        'number_of_nights',
         'status',
         'payment_status',
         'special_requests',

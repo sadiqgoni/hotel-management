@@ -24,6 +24,9 @@ return new class extends Migration
             $table->string('coupon_discount')->nullable();
             $table->string('payment_status')->nullable();
             $table->string('price_per_night')->nullable();
+            $table->string('frequent_guest_message')->nullable();
+            $table->string('number_of_nights')->nullable();
+
             $table->string('status')->nullable();
             $table->text('special_requests')->nullable(); 
             $table->string('number_of_people')->nullable();
