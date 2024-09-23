@@ -2,6 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Management\Pages\RestaurantMenu;
+use App\Filament\Management\Resources\MenuCategoryResource;
+use App\Filament\Management\Resources\MenuItemResource;
 use App\Filament\Management\Resources\StaffManagementResource;
 use App\Filament\Management\Resources\UserResource;
 use App\Filament\Management\Resources\CouponManagementResource;
@@ -70,13 +73,16 @@ class ManagementPanelProvider extends PanelProvider
         return [
             UserResource::class,
             StaffManagementResource::class,
-            CouponManagementResource::class
+            CouponManagementResource::class,
+            MenuItemResource::class,
+            MenuCategoryResource::class
         ];
     }
     protected function getPages(): array
     {
         return [
             Pages\Dashboard::class,
+            RestaurantMenu::class
         ];
     }
 }
