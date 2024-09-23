@@ -66,13 +66,10 @@ class MenuItemResource extends Resource
                     ->label('Item Image')
                     ->directory('menu-items')
                     ->image()
-                    ->maxSize(1024) // Maximum image size of 1MB
+                    ->maxSize(1024)
                     ->placeholder('Upload image'),
 
-                Toggle::make('is_available')
-                    ->label('Available')
-                    ->default(true)
-                    ->inlineLabel()
+           
             ]);
     }
 
@@ -83,8 +80,8 @@ class MenuItemResource extends Resource
                 ImageColumn::make('image')
                     ->label('Image')
                     ->square()
-                    ->size(40)
-                    ->placeholder(fn() => asset('images/placeholder.png')), // Use a placeholder image if none uploaded
+                    ->size(40),
+                    // ->placeholder(fn() => asset('hotel2.png')),
 
                 TextColumn::make('name')
                     ->label('Item Name')
@@ -100,13 +97,6 @@ class MenuItemResource extends Resource
                     ->label('Price (₦)')
                     ->sortable(),
 
-                BadgeColumn::make('is_available')
-                    ->label('Availability')
-                    // ->option([
-                    //     true => 'Available',
-                    //     false => 'Not Available',
-                    // ])
-                    ->color(fn($state) => $state ? 'success' : 'danger'),
             ])
             ->filters([
                 SelectFilter::make('menu_category_id')

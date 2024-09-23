@@ -11,7 +11,7 @@ class MenuOrdering extends Component
     public $cartItems = [];
     public $categories = [];
     public $selectedCategory = null;
-    public $selectedCategoryName = null;  // Store the name of the selected category
+    public $selectedCategoryName = null;  
     public $searchTerm = '';
     public $subtotal = 0;
     public $tax = 0;
@@ -20,7 +20,7 @@ class MenuOrdering extends Component
     public function mount()
     {
         $this->categories = MenuCategory::all();
-        $this->menuItems = MenuItem::all();  // Load all menu items initially
+        $this->menuItems = MenuItem::all();  
     }
 
     public function updatedSearchTerm()
@@ -32,9 +32,9 @@ class MenuOrdering extends Component
   
     public function filterByCategory($categoryId)
     {
-        $category = MenuCategory::find($categoryId);  // Fetch the category
+        $category = MenuCategory::find($categoryId);  
         $this->selectedCategory = $categoryId;
-        $this->selectedCategoryName = $category->name;  // Update the selected category name
+        $this->selectedCategoryName = $category->name;  
         $this->menuItems = MenuItem::where('menu_category_id', $categoryId)->get();
     }
     

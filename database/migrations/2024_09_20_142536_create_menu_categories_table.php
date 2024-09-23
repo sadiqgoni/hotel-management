@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('menu_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('name');  // e.g., Breakfast, Lunch, Dinner
+            $table->string('name');  
             $table->string('description')->nullable();
+            $table->string('icon')->nullable();
+
             $table->timestamps();
         });
     }
