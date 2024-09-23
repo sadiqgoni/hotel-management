@@ -41,7 +41,7 @@
 
                         <h4 class="font-bold text-lg text-center mb-2">{{ $item->name }}</h4>
                         <p class="text-sm text-gray-600 text-center mb-2">{{ $item->description }}</p>
-                        <p class="font-bold text-lg text-center mb-4">${{ number_format($item->price, 2) }}</p>
+                        <p class="font-bold text-lg text-center mb-4">₦{{ number_format($item->price, 2) }}</p>
 
                         <div class="flex items-center justify-center space-x-2 gap-2">
                             <button wire:click="removeFromCart({{ $item->id }})"
@@ -69,7 +69,7 @@
                             <h4 class="font-semibold">{{ $cartItem['name'] }}</h4>
                             <p class="text-sm text-gray-600 dark:text-white">x{{ $cartItem['quantity'] }}</p>
                         </div>
-                        <span class="font-bold">${{ number_format($cartItem['price'] * $cartItem['quantity'], 2) }}</span>
+                        <span class="font-bold">₦{{ number_format($cartItem['price'] * $cartItem['quantity'], 2) }}</span>
                     </div>
                 @endforeach
             </div>
@@ -78,15 +78,15 @@
                 <h3 class="font-bold">Payment Summary</h3>
                 <div class="flex justify-between mt-2">
                     <span>Sub Total</span>
-                    <span>${{ number_format($subtotal, 2) }}</span>
+                    <span>₦{{ number_format($subtotal, 2) }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span>Tax</span>
-                    <span>${{ number_format($tax, 2) }}</span>
+                    <span>₦{{ number_format($tax, 2) }}</span>
                 </div>
                 <div class="flex justify-between font-bold mt-2 mb-4">
                     <span>Total Payment</span>
-                    <span>${{ number_format($total, 2) }}</span>
+                    <span>₦{{ number_format($total, 2) }}</span>
                 </div>
             </div>
 
