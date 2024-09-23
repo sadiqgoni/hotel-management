@@ -3,6 +3,9 @@ namespace App\Livewire;
 
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
+use App\Models\Order;
+use App\Models\OrderItem;
+use Filament\Notifications\Notification;
 use Livewire\Component;
 
 class MenuOrdering extends Component
@@ -11,7 +14,7 @@ class MenuOrdering extends Component
     public $cartItems = [];
     public $categories = [];
     public $selectedCategory = null;
-    public $selectedCategoryName = null;  
+    public $selectedCategoryName = null;
     public $searchTerm = '';
     public $subtotal = 0;
     public $tax = 0;
@@ -20,7 +23,7 @@ class MenuOrdering extends Component
     public function mount()
     {
         $this->categories = MenuCategory::all();
-        $this->menuItems = MenuItem::all();  
+        $this->menuItems = MenuItem::all();
     }
 
     public function updatedSearchTerm()
@@ -29,15 +32,15 @@ class MenuOrdering extends Component
         $this->menuItems = MenuItem::where('name', 'like', '%' . $this->searchTerm . '%')->get();
     }
 
-  
+
     public function filterByCategory($categoryId)
     {
-        $category = MenuCategory::find($categoryId);  
+        $category = MenuCategory::find($categoryId);
         $this->selectedCategory = $categoryId;
-        $this->selectedCategoryName = $category->name;  
+        $this->selectedCategoryName = $category->name;
         $this->menuItems = MenuItem::where('menu_category_id', $categoryId)->get();
     }
-    
+
     public function addToCart($itemId)
     {
         $item = MenuItem::find($itemId);
@@ -78,6 +81,42 @@ class MenuOrdering extends Component
         $this->tax = $this->subtotal * 0.1; // Example 10% tax
         $this->total = $this->subtotal + $this->tax;
     }
+
+    public function placeOrder()
+    {
+        // Ensure cart has items
+        if (empty($this->cartItems)) {
+            Notification::make()->title('Cart is empty.')->danger()->send();
+            return;
+        }
+
+        // Create the order
+        $order = Order::create([
+            'user_id' => auth()->id(), 
+            'subtotal' => $this->subtotal,
+            'tax' => $this->tax,
+            'total_amount' => $this->total,
+        ]);
+
+        // Create order items
+        foreach ($this->cartItems as $itemId => $cartItem) {
+            OrderItem::create([
+                'order_id' => $order->id,
+                'menu_item_id' => $itemId,
+                'quantity' => $cartItem['quantity'],
+                'price' => $cartItem['price'],
+            ]);
+        }
+
+        // Clear the cart
+        $this->cartItems = [];
+        $this->subtotal = 0;
+        $this->tax = 0;
+        $this->total = 0;
+        Notification::make()->title('Order has been placed successfully!')->success()->send();
+
+    }
+
 
     public function render()
     {

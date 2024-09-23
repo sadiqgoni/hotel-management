@@ -30,5 +30,9 @@ class Guest extends Model
     {
         return $this->hasMany(ReservationWaitlist::class);
     }
+    public function order()
+    {
+        return $this->hasMany(Order::class);
+    }
 
 }

@@ -13,7 +13,10 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('guest_id')->nullable()->constrained()->cascadeOnDelete();  // If order is from a hotel guest
+            $table->foreignId('guest_id')->nullable()->constrained('guests')->cascadeOnDelete();  // If order is from a hotel guest
+            $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->decimal('subtotal', 10, 2);
+            $table->decimal('tax', 10, 2);
             $table->decimal('total_amount', 10, 2);
             $table->string(column: 'payment_status')->default('pending');
             $table->timestamps();

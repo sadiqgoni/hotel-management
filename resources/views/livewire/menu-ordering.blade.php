@@ -90,9 +90,12 @@
                 </div>
             </div>
 
-            <x-filament::button class="w-full text-white py-2 mt-4 rounded-lg hover:bg-blue-600 transition">
+
+            <x-filament::button wire:click="placeOrder"
+                class="w-full text-white py-2 mt-4 rounded-lg hover:bg-blue-600 transition">
                 Place An Order
             </x-filament::button>
+
         </div>
     </x-filament-tables::container>
 </div>
