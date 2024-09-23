@@ -28,7 +28,7 @@
         </div>
 
         {{-- Lunch Menu Section --}}
-        <h2 class="text-2xl font-bold mb-4 text-center">{{ $selectedCategoryName ?? 'Lunch Menu' }}</h2>
+        <h2 class="text-2xl font-bold mb-4 text-center">{{ $selectedCategoryName ?? 'Restaurant Menu' }}</h2>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-3 gap-6">
             @foreach ($menuItems as $item)
