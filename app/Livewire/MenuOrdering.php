@@ -281,12 +281,12 @@ class MenuOrdering extends Component implements HasForms
             // Create the order
             $order = Order::create([
                 'customer_type' => $data['customerType'],
-                'guest_id' => $data['selectedGuest'],
-                'table_id' => $data['selectedTable'],
-                'total_amount' => $this->total,
-                'payment_method' => $data['paymentMethod'], 
-                'dining_option' => $data['diningOption'],
-                'billing_option' => $data['billingOption'],
+                // 'guest_id' => $data['selectedGuest'],
+                // 'table_id' => $data['selectedTable'],
+                // 'total_amount' => $this->total,
+                // 'payment_method' => $data['paymentMethod'], 
+                // 'dining_option' => $data['diningOption'],
+                // 'billing_option' => $data['billingOption'],
             ]);
 
             // Create order items
