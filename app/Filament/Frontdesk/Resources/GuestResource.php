@@ -99,7 +99,7 @@ class GuestResource extends Resource
                 ->sortable()
                 ->searchable(),
                 BadgeColumn::make('stay_count')
-                ->label('Stay Count')
+                ->label('Total Stay')
                 ->sortable()
                 ->colors([
                     'success' => fn ($state) => $state >= 5, // Show badge if 5+ stays

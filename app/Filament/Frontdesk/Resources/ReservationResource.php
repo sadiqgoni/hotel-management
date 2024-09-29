@@ -110,8 +110,6 @@ class ReservationResource extends Resource
                         ->readOnly(),
                     
 
-                        TextInput::make('price_per_night')->label('Price per Night')->readOnly(),
-
                         DatePicker::make('check_in_date')
                             ->label('Check-In Date')
                             ->required()
@@ -160,6 +158,7 @@ class ReservationResource extends Resource
                     ->schema([
                         Select::make('payment_method')
                             ->label('Payment Method')
+                            ->searchable()
                             ->options([
                                 'card' => 'Card Payment',
                                 'cash' => 'Cash Payment',
@@ -170,8 +169,11 @@ class ReservationResource extends Resource
                             ->afterStateUpdated(function ($state, callable $get, callable $set) {
                                 static::checkPaymentStatus($get, $set);
                             }),
-                        TextInput::make('remaining_balance')->label('Remaining Balance')->readOnly(),
-                        TextInput::make('payment_status')->label('Payment Status')->readOnly(),
+                        TextInput::make('remaining_balance')
+                        ->label('Remaining Balance')
+                        ->readOnly(),
+                        TextInput::make('payment_status')
+                        ->label('Payment Status')->readOnly(),
                     ]),
 
                 // Step 5: Special Requests & Final Confirmation
@@ -180,8 +182,12 @@ class ReservationResource extends Resource
                     ->description('Add any special requests and confirm the reservation.')
                     ->completedIcon('heroicon-m-check-circle') 
                     ->schema([
-                        Textarea::make('special_requests')->label('Special Requests (Optional)'),
-                        Select::make('status')->label('Reservation Status')->options([
+                        Textarea::make('special_requests')
+                        ->label('Special Requests (Optional)'),
+                        Select::make('status')
+                        ->searchable()
+
+                        ->label('Reservation Status')->options([
                             'Confirmed' => 'Confirmed',
                             'On Hold' => 'On Hold',
                         ])->required(),

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Management\Pages;
+namespace App\Filament\Restaurant\Pages;
 
 use Filament\Pages\Page;
 

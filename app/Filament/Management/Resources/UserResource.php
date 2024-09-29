@@ -44,6 +44,8 @@ class UserResource extends Resource
                                         'Manager' => 'Manager',
                                         'FrontDesk' => 'Front Desk',
                                         'Housekeeper' => 'Housekeeper',
+                                        'Restaurant' => 'Restaurant',
+
                                     ])
                                     ->placeholder('Select Role'),
                                 Forms\Components\TextInput::make('password')
@@ -78,6 +80,8 @@ class UserResource extends Resource
                         'success' => 'Manager',
                         'info' => 'FrontDesk',
                         'warning' => 'Housekeeper',
+                        'danger' => 'Restaurant',
+
                     ]),
 
                 Tables\Columns\TextColumn::make('created_at')

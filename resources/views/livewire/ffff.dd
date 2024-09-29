@@ -113,16 +113,94 @@
                     <span> ₦ {{ number_format($total, 2) }}</span>
                 </div>
             </div>
+
+            {{-- Customer Information --}}
             <x-filament::section icon="heroicon-o-user" icon-color="primary" collapsible class="mb-4" icon-size="lg">
                 <x-slot name="heading">Customer Information</x-slot>
-                {{ $this->form }}
-            </x-filament::section>
 
-            <x-filament::button wire:click="placeOrder" class="w-full mt-4" color="primary"
+                <div x-data="{ 
+                    customerType: @entangle('customerType'), 
+                    diningOption: @entangle('diningOption'), 
+                    billingOption: @entangle('billingOption'), 
+                    paymentMethod: @entangle('paymentMethod') 
+                }">
+                    {{-- Customer Type Selection --}}
+                    <x-filament::input.wrapper label="Customer Type" class="mb-4">
+                        <x-filament::input.select wire:model.live="customerType">
+                            <option value="">Select Customer Type</option>
+                            <option value="walkin">Walk-in Customer</option>
+                            <option value="guest">Hotel Guest</option>
+                        </x-filament::input.select>
+                    </x-filament::input.wrapper>
+
+                    {{-- Guest Selection --}}
+                    <div x-show="customerType === 'guest'" x-transition>
+                        <x-filament::input.wrapper label="Select Guest" class="mb-4">
+                            <x-filament::input.select wire:model.live="selectedGuest">
+                                <option value="">Select a guest</option>
+                                @foreach ($guestsWithRooms as $guest)
+                                    @foreach ($guest->reservations as $reservation)
+                                        <option value="{{ $guest->id }}">
+                                            {{ $guest->name }} - Room {{ $reservation->room->room_number }}
+                                        </option>
+                                    @endforeach
+                                @endforeach
+                            </x-filament::input.select>
+                        </x-filament::input.wrapper>
+                    </div>
+
+                    {{-- Dining Option Selection --}}
+                    <x-filament::input.wrapper label="Dining Option" class="mb-4">
+                        <x-filament::input.select wire:model.live="diningOption">
+                            <option value="">Select Dining Option</option>
+                            <option value="dinein">Dine In</option>
+                            <option value="takeout">Takeout</option>
+                        </x-filament::input.select>
+                    </x-filament::input.wrapper>
+
+                    {{-- Table Selection --}}
+                    <div x-show="diningOption === 'dinein'" x-transition>
+                        <x-filament::input.wrapper label="Select Table" class="mb-4">
+                            <x-filament::input.select wire:model.live="selectedTable">
+                                <option value="">Select a table</option>
+                                @foreach ($tables as $table)
+                                    <option value="{{ $table->id }}">{{ $table->name }}</option>
+                                @endforeach
+                            </x-filament::input.select>
+                        </x-filament::input.wrapper>
+                    </div>
+
+                    {{-- Billing Options --}}
+                    <div x-show="customerType === 'guest'" x-transition>
+                        <x-filament::input.wrapper label="Billing Option" class="mb-4">
+                            <x-filament::input.select wire:model.live="billingOption">
+                                <option value="">Select Billing Option</option>
+                                <option value="charge_room">Charge to Room</option>
+                                <option value="restaurant">Settle in Restaurant</option>
+                            </x-filament::input.select>
+                        </x-filament::input.wrapper>
+                    </div>
+
+                    {{-- Payment Method --}}
+                    <div x-show="billingOption === 'restaurant' || customerType === 'walkin'" x-transition>
+                        <x-filament::input.wrapper label="Payment Method" class="mb-4">
+                            <x-filament::input.select wire:model.live="paymentMethod">
+                                <option value="">Select Payment Option</option>
+                                <option value="cash">Cash</option>
+                                <option value="card">Card</option>
+                                <option value="transfer">Bank Transfer</option>
+                            </x-filament::input.select>
+                        </x-filament::input.wrapper>
+                    </div>
+
+                </div>
+            </x-filament::section>
+         
+            {{-- Place Order Button --}}
+            <x-filament::button wire:click="placeOrder" class="w-full  mt-4" color="primary"
                 :disabled="count($cartItems) === 0" icon="heroicon-m-sparkles">
                 Place Order
             </x-filament::button>
-
             <button wire:click="addToCart({{ $item->id }})"
                 x-on:keydown.window.prevent.ctrl.1="$wire.addToCart({{ $item->id }})">
 

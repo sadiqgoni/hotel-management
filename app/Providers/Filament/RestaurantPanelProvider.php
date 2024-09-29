@@ -2,19 +2,14 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Management\Pages\RestaurantMenu;
-use App\Filament\Management\Resources\LeaveApplicationResource;
-use App\Filament\Management\Resources\MenuCategoryResource;
-use App\Filament\Management\Resources\MenuItemResource;
-use App\Filament\Management\Resources\StaffManagementResource;
+use App\Filament\Restaurant\Pages\RestaurantMenu;
 use App\Filament\Management\Resources\UserResource;
-use App\Filament\Management\Resources\CouponManagementResource;
-use App\Http\Middleware\RoleRedirect;
+use App\Filament\Restaurant\Resources\OrderResource;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\MenuItem;
 use Filament\Pages;
+use Filament\Navigation\MenuItem;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -27,32 +22,32 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class ManagementPanelProvider extends PanelProvider
+class RestaurantPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->id('management')
-            ->path('management')
+            ->id('restaurant')
+            ->path('restaurant')
             ->login()
             ->colors([
-                'primary' => Color::Indigo,
+                'primary' => Color::hex('#FF7F50')
             ])
+            ->resources($this->getResources())
+            ->pages($this->getPages())
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Front Desk')
                     ->url('/frontdesk')
                     ->icon('heroicon-o-users')
                     ->visible(condition: fn(): bool => auth()->user()->role === 'Manager'),
-                    MenuItem::make()
-                    ->label(label: 'Restaurant')
-                    ->url('/restaurant')
+                MenuItem::make()
+                    ->label('Management')
+                    ->url('/management')
                     ->icon('heroicon-o-squares-2x2')
                     ->visible(fn(): bool => auth()->user()->role === 'Manager')
             ])
-            ->resources($this->getResources())
-            ->pages($this->getPages())
-            ->discoverWidgets(in: app_path('Filament/Management/Widgets'), for: 'App\\Filament\\Management\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Restaurant/Widgets'), for: 'App\\Filament\\Restaurant\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
@@ -70,24 +65,23 @@ class ManagementPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                RoleRedirect::class,
-
             ]);
     }
+
     protected function getResources(): array
     {
         return [
-            UserResource::class,
-            StaffManagementResource::class,
-            CouponManagementResource::class,
-            MenuItemResource::class,
-            MenuCategoryResource::class,
+            OrderResource::class
+            
         ];
     }
     protected function getPages(): array
     {
         return [
             Pages\Dashboard::class,
+            RestaurantMenu::class
+
+
         ];
     }
 }

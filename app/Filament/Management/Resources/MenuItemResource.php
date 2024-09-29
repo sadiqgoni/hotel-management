@@ -36,11 +36,13 @@ class MenuItemResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $categories = MenuCategory::all()->pluck('name', 'id')->toArray();
+
         return $form
             ->schema([
                 Select::make('menu_category_id')
                     ->label('Category')
-                    ->options(MenuCategory::all()->pluck('name', 'id'))
+                    ->options($categories) // Ensure $categories is an array
                     ->required()
                     ->placeholder('Select a Category'),
 
@@ -81,14 +83,13 @@ class MenuItemResource extends Resource
                     ->label('Image')
                     ->square()
                     ->size(40),
-                    // ->placeholder(fn() => asset('hotel2.png')),
 
                 TextColumn::make('name')
                     ->label('Item Name')
                     ->sortable()
                     ->searchable(),
 
-                TextColumn::make('category.name')
+                TextColumn::make('menuCategory.name')
                     ->label('Category')
                     ->sortable()
                     ->searchable(),
@@ -101,7 +102,7 @@ class MenuItemResource extends Resource
             ->filters([
                 SelectFilter::make('menu_category_id')
                     ->label('Category')
-                    ->relationship('category', 'name'),
+                    ->relationship('menuCategory', 'name'),
             ])
             ->actions([
               EditAction::make(),

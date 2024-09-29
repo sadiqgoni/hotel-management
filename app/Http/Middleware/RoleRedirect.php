@@ -39,6 +39,11 @@ class RoleRedirect
                     return redirect()->route('filament.housekeeper.pages.dashboard'); // Housekeeper Dashboard
                 }
                 break;
+            case 'Restaurant':
+                if ($panel !== 'restaurant') {
+                    return redirect()->route('filament.restaurant.pages.dashboard'); // Restaurant Dashboard
+                }
+                break;
             default:
                 return redirect('/login'); // If role is undefined
         }

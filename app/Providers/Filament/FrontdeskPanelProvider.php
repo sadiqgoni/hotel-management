@@ -69,6 +69,11 @@ class FrontdeskPanelProvider extends PanelProvider
                 ->label('Management')
                 ->url('/management')
                 ->icon('heroicon-o-squares-2x2')
+                ->visible(fn(): bool => auth()->user()->role === 'Manager'),
+                MenuItem::make()
+                ->label(label: 'Restaurant')
+                ->url('/restaurant')
+                ->icon('heroicon-o-squares-2x2')
                 ->visible(fn(): bool => auth()->user()->role === 'Manager')
                 ])
             ->discoverWidgets(in: app_path('Filament/Frontdesk/Widgets'), for: 'App\\Filament\\Frontdesk\\Widgets')
