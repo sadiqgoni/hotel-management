@@ -58,10 +58,10 @@ class GuestResource extends Resource
                                     ->maxLength(255)
                                     ->unique(Guest::class, 'nin_number'), 
 
-                                TextInput::make('bonus_code')
-                                    ->label('Bonus Code')
-                                    ->placeholder('Enter Bonus Code')
-                                    ->maxLength(255),
+                                // TextInput::make('bonus_code')
+                                //     ->label('Bonus Code')
+                                //     ->placeholder('Enter Bonus Code')
+                                //     ->maxLength(255),
                                 Textarea::make('preferences')
                                     ->label('Preferences')
                                     ->placeholder('Enter Preferences'),
@@ -90,10 +90,10 @@ class GuestResource extends Resource
                 ->label('NIN Number')
                 ->sortable()
                 ->searchable(),
-            TextColumn::make('bonus_code')
-                ->label('Bonus Code')
-                ->sortable()
-                ->searchable(),
+            // TextColumn::make('bonus_code')
+            //     ->label('Bonus Code')
+            //     ->sortable()
+            //     ->searchable(),
             TextColumn::make('preferences')
                 ->label('Preferences')
                 ->sortable()

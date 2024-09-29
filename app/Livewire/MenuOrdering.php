@@ -257,23 +257,23 @@ class MenuOrdering extends Component implements HasForms
 
     public function placeOrder()
     {
-        try {
-            // Validate using the existing validation rules
-            $this->validate([
-                'customerType' => 'required|in:guest,walkin',
-                'diningOption' => 'required|in:dinein,takeout',
-                'selectedTable' => 'required_if:diningOption,dinein',
-                'selectedGuest' => 'required_if:customerType,guest',
-                'billingOption' => 'required_if:customerType,guest|in:charge_room,restaurant',
-                'paymentMethod' => 'required_if:billingOption,restaurant|required_if:customerType,walkin|in:cash,card,transfer',
-            ], [
-                'customerType.required' => 'Please select a customer type.',
-                'diningOption.required' => 'Please select a dining option.',
-                'selectedTable.required_if' => 'Please select a table for dine-in orders.',
-                'selectedGuest.required_if' => 'Please select a guest for hotel guest orders.',
-                'billingOption.required_if' => 'Please select a billing option for hotel guests.',
-                'paymentMethod.required_if' => 'Please select a payment method.',
-            ]);
+        // try {
+        //     // Validate using the existing validation rules
+        //     $this->validate([
+        //         'customerType' => 'required|in:guest,walkin',
+        //         'diningOption' => 'required|in:dinein,takeout',
+        //         'selectedTable' => 'required_if:diningOption,dinein',
+        //         'selectedGuest' => 'required_if:customerType,guest',
+        //         'billingOption' => 'required_if:customerType,guest|in:charge_room,restaurant',
+        //         'paymentMethod' => 'required_if:billingOption,restaurant|required_if:customerType,walkin|in:cash,card,transfer',
+        //     ], [
+        //         'customerType.required' => 'Please select a customer type.',
+        //         'diningOption.required' => 'Please select a dining option.',
+        //         'selectedTable.required_if' => 'Please select a table for dine-in orders.',
+        //         'selectedGuest.required_if' => 'Please select a guest for hotel guest orders.',
+        //         'billingOption.required_if' => 'Please select a billing option for hotel guests.',
+        //         'paymentMethod.required_if' => 'Please select a payment method.',
+        //     ]);
 
             // Get data from the form
             $data = $this->form->getState();
@@ -309,15 +309,15 @@ class MenuOrdering extends Component implements HasForms
             // Reset order state
             $this->resetOrderState();
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // Gather and display validation error messages
-            $errors = $e->validator->errors()->all();
-            Notification::make()
-                ->title('Validation Errors')
-                ->body(implode("\n", $errors))
-                ->danger()
-                ->send();
-        }
+        // } catch (\Illuminate\Validation\ValidationException $e) {
+        //     // Gather and display validation error messages
+        //     $errors = $e->validator->errors()->all();
+        //     Notification::make()
+        //         ->title('Validation Errors')
+        //         ->body(implode("\n", $errors))
+        //         ->danger()
+        //         ->send();
+        // }
     }
 
     public function render()
