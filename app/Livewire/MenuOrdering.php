@@ -233,7 +233,7 @@ class MenuOrdering extends Component implements HasForms
             return $item['price'] * $item['quantity'];
         });
 
-        $this->tax = $this->subtotal * 0.075;
+        $this->tax = $this->subtotal * 0.0;
         $this->total = $this->subtotal + $this->tax;
     }
 
@@ -275,39 +275,40 @@ class MenuOrdering extends Component implements HasForms
         //         'paymentMethod.required_if' => 'Please select a payment method.',
         //     ]);
 
-            // Get data from the form
-            $data = $this->form->getState();
+        // Get data from the form
+        $data = $this->form->getState();
 
-            // Create the order
-            $order = Order::create([
-                'customer_type' => $data['customerType'],
-                // 'guest_id' => $data['selectedGuest'],
-                // 'table_id' => $data['selectedTable'],
-                // 'total_amount' => $this->total,
-                // 'payment_method' => $data['paymentMethod'], 
-                // 'dining_option' => $data['diningOption'],
-                // 'billing_option' => $data['billingOption'],
+        // Create the order
+        $order = Order::create([
+            'user_id' => auth()->id(),
+            'customer_type' => $data['customerType'] ?? null,
+            'guest_id' => $data['selectedGuest'] ?? null,
+            'table_id' => $data['selectedTable'] ?? null,
+            'total_amount' => $this->total ?? null,
+            'payment_method' => $data['paymentMethod'] ?? null,
+            'dining_option' => $data['diningOption'] ?? null,
+            'billing_option' => $data['billingOption'] ?? null,
+        ]);
+
+        // Create order items
+        foreach ($this->cartItems as $itemId => $item) {
+            OrderItem::create([
+                'order_id' => $order->id,
+                'menu_item_id' => $itemId,
+                'quantity' => $item['quantity'],
+                'price' => $item['price'],
             ]);
+        }
 
-            // Create order items
-            foreach ($this->cartItems as $itemId => $item) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'menu_item_id' => $itemId,
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price'],
-                ]);
-            }
+        // Show success notification
+        Notification::make()
+            ->title('Order Placed Successfully')
+            ->body('Your order has been placed and is being processed.')
+            ->success()
+            ->send();
 
-            // Show success notification
-            Notification::make()
-                ->title('Order Placed Successfully')
-                ->body('Your order has been placed and is being processed.')
-                ->success()
-                ->send();
-
-            // Reset order state
-            $this->resetOrderState();
+        // Reset order state
+        $this->resetOrderState();
 
         // } catch (\Illuminate\Validation\ValidationException $e) {
         //     // Gather and display validation error messages

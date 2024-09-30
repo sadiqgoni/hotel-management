@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Restaurant\Pages\RestaurantMenu;
 use App\Filament\Management\Resources\UserResource;
 use App\Filament\Restaurant\Resources\OrderResource;
+use App\Http\Middleware\RoleRedirect;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -65,6 +66,7 @@ class RestaurantPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                RoleRedirect::class,
             ]);
     }
 

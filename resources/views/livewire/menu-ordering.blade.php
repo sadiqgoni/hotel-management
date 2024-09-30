@@ -74,6 +74,8 @@
         </div>
     </div>
 
+           
+
     {{-- Invoice Sidebar --}}
     <div class="w-1/4 min-w-[300px]">
         <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg h-screen sticky top-0 overflow-y-auto">
@@ -104,7 +106,8 @@
                     <span> ₦ {{ number_format($subtotal, 2) }}</span>
                 </div>
                 <div class="flex justify-between mb-2">
-                    <span>Tax (7.5%)</span>
+                    <span>Service Charge</span>
+                    
                     <span> ₦ {{ number_format($tax, 2) }}</span>
                 </div>
                 <div

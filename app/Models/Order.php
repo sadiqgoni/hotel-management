@@ -11,14 +11,15 @@ class Order extends Model
 
 
     protected $fillable = [
-        'user_id',        // The user (restaurant staff) who placed the order
-        'guest_id',       // Optional if linked to a hotel guest
-        'table_id',       // Optional if linked to a specific table
-        'subtotal',
-        'tax',
+        'user_id',      
+        'guest_id',       
+        'table_id',      
+        'service_charge',
         'total_amount',
-        'status',         // Order status: 'pending', 'completed', 'canceled'
-        'customer_type',  
+        'status',    
+        'amount_paid',   
+        'customer_type', 
+        'change_amount' ,
         'dining_option',
         'billing_option',
         'payment_method',

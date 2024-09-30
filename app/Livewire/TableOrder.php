@@ -1,107 +1,98 @@
-<?php 
+<?php
+namespace App\Http\Livewire;
 
-namespace App\Livewire;
-
-use Livewire\Component;
-use Filament\Forms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkAction;
-use Filament\Tables\Actions\ViewAction;
-use Filament\Tables\Columns\Layout\Stack;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Concerns\InteractsWithTable;
-use Filament\Tables\Contracts\HasTable;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use App\Models\Order;
+use Filament\Tables\Columns\TextColumn;
+use Livewire\Component;
+use Filament\Forms\Form;
+use Filament\Tables\Table;
+
+use Filament\Tables\Contracts\HasTable;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+
+use Filament\Tables\Concerns\InteractsWithTable;
+use Illuminate\Contracts\View\View;
+
 use Filament\Forms\Concerns\InteractsWithForms;
 
-
-class TableOrder extends Component
+class TableOrder extends Component implements HasTable, HasForms
 {
-    public $orderId;
+    use InteractsWithForms;
+    use InteractsWithTable;
+    public ?array $data = [];
     public $paymentMethod;
     public $totalAmount;
-    public $payableAmount;
-    public $changeAmount;
+    public $amountPaid;
+    public $amountChange = 0;
 
-    public function mount(Order $record)
+    public function mount(Order $order): void
     {
-        // Initialize the modal with order data
-        $this->orderId = $record->id;
-        $this->totalAmount = $record->total_amount;
-        $this->payableAmount = $this->totalAmount; // Default to total amount
-        $this->calculateChange();
+        $this->form->fill($order->toArray());
+
+        // Load the total amount and other necessary data from the record
+        // $this->totalAmount = $record->total_amount;
     }
 
-    public function calculateChange()
+    public function updatedAmountPaid()
     {
-        $this->changeAmount = $this->payableAmount - $this->totalAmount;
+        $this->amountChange = $this->totalAmount - $this->amountPaid;
     }
 
-    public function submitPayment()
+    public function create(): void
     {
-        $order = Order::find($this->orderId);
-        $order->payment_method = $this->paymentMethod;
-        $order->paid_amount = $this->payableAmount;
-        $order->change_amount = $this->changeAmount;
-        $order->save();
-        
-        // Close the modal after processing the payment
-        $this->dispatchBrowserEvent('close-payment-modal');
+        dd($this->form->getState());
+
+        // Handle the payment submission logic here
+        // For example, saving the payment details to the database
+        // You can emit an event or redirect after successful payment
     }
 
-    public function render()
+
+    public function render(): View
     {
-        return view('livewire.table-order', [
-            'totalAmount' => $this->totalAmount,  // This is already part of the Livewire component
-            'payableAmount' => $this->payableAmount,
-            'changeAmount' => $this->changeAmount,
+        return view('livewire.table-order');
+    }
+    public function table(Table $table): Table
+    {
+        return $table->
+        query(Order::query()->latest())->columns([
+            TextColumn::make('created_at')->date()->size('sm'),
+       
         ]);
     }
-    
+
+    // public function form(Form $form): Form
+    // {
+    //     return $form
+    //         ->schema([
+    //            Select::make('paymentMethod')
+    //                 ->label('Payment Method')
+    //                 ->options([
+    //                     'cash' => 'Cash',
+    //                     'card' => 'Card',
+    //                 ])
+    //                 ->required(),
+                
+    //             TextInput::make('totalAmount')
+    //                 ->label('Total Amount')
+    //                 ->disabled()
+    //                 ->numeric()
+    //                 ->required(),
+
+    //            TextInput::make('amountPaid')
+    //                 ->label('Amount Paid')
+    //                 ->numeric()
+    //                 ->required()
+    //                 ->reactive()
+    //                 ->afterStateUpdated(fn (callable $set) => $set('amountChange', $this->totalAmount - $this->amountPaid)),
+
+    //          TextInput::make('amountChange')
+    //                 ->label('Amount Change')
+    //                 ->numeric()
+    //                 ->disabled(),
+    //         ])
+    //         ->statePath('data');
+    // }
 }
-
-// class TableOrder extends Component
-// {
-//     public $orderId;
-//     public $paymentMethod;
-//     public $totalAmount = 0;
-//     public $payableAmount = 0;
-//     public $changeAmount = 0;
-
-//     public function mount(Order $record)
-//     {
-//         // Initialize the modal with order data
-//         $this->orderId = $record->id;
-//         $this->totalAmount = $record->total_amount;
-//         $this->payableAmount = $this->totalAmount; // Default to total amount
-//         $this->calculateChange(); // Calculate changeAmount initially
-//     }
-
-//     public function calculateChange()
-//     {
-//         $this->changeAmount = $this->payableAmount - $this->totalAmount;
-//     }
-
-
-//     public function submitPayment()
-//     {
-//         $order = Order::find($this->orderId);
-//         $order->payment_method = $this->paymentMethod;
-//         $order->paid_amount = $this->payableAmount;
-//         $order->change_amount = $this->changeAmount;
-//         $order->save();        
-//         // Close the modal after processing the payment
-//         $this->dispatchBrowserEvent('close-payment-modal');
-//     }
-
-//     public function render()
-//     {
-//         return view('livewire.table-order',[
-//             'changeAmount' => $this->changeAmount,
-//         ]);
-//     }
-// }

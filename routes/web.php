@@ -9,4 +9,5 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('/reservations/{reservation}/print', [ReservationController::class, 'print'])->name('reservations.print');
+Route::get('/invoice/generate/{order}', [InvoiceController::class, 'generateInvoice'])->name('invoice.generate');
 

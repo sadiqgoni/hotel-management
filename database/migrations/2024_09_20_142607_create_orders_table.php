@@ -16,11 +16,12 @@ return new class extends Migration
             $table->foreignId('guest_id')->nullable()->constrained('guests')->cascadeOnDelete();  // If order is from a hotel guest
             $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->foreignId('table_id')->nullable()->constrained('tables')->cascadeOnDelete();  // If order is from a hotel guest
-            $table->decimal('subtotal', 10, 2)->nullable();
-            $table->decimal('tax', 10, 2)->nullable();
+            $table->decimal('amount_paid', 10, 2)->nullable();
+            $table->decimal('service_charge', 10, 2)->nullable();
             $table->decimal('total_amount', 10, 2)->nullable();
             $table->string(column: 'status')->default('pending');
             $table->string(column: 'customer_type')->nullable();
+            $table->decimal('change_amount', 10, 2)->nullable();
             $table->string(column: 'payment_method')->nullable();
             $table->string(column: 'dining_option')->nullable();
             $table->string(column: 'billing_option')->nullable();            
