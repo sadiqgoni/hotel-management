@@ -5,6 +5,7 @@ namespace App\Filament\Restaurant\Resources;
 use App\Filament\Restaurant\Resources\OrderResource\Pages;
 use App\Filament\Restaurant\Resources\OrderResource\RelationManagers;
 use App\Models\Order;
+use App\Models\User;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\Action;
 use Filament\Forms;
@@ -78,7 +79,12 @@ class OrderResource extends Resource
                         'success' => 'cash',
                         'warning' => 'card',
                     ]),
-
+                    Tables\Columns\TextColumn::make('user_id')
+                    ->label('Cashier')
+                    ->formatStateUsing(function ($state) {
+                        $user = User::find($state);
+                        return $user ? $user->name : 'Deleted User';
+                    }),
 
                 Tables\Columns\TextColumn::make('created_at')->label('Created At')->date(),
 
