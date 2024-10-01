@@ -25,22 +25,27 @@ class TableOrderComponent extends Component implements HasForms
     public ?float $total_amount = null;
     public ?float $change_amount = 0.00;
     public Order $order;
+    public ?array $previousData = null;
+
 
     public function mount(Order $order): void
     {
         $this->order = $order;
-
+    
         // Initialize the form state with order data
         $this->form->fill([
             'payment_method' => $order->payment_method,
             'amount_paid' => $order->amount_paid,
             'service_charge' => $order->service_charge,
         ]);
-
+    
         $this->total_amount = $order->total_amount;
         $this->calculateChange();
+    
+        // Set previous data to the initial state
+        $this->previousData = $this->data;
     }
-
+    
     public function form(Form $form): Form
     {
         return $form
@@ -99,30 +104,43 @@ class TableOrderComponent extends Component implements HasForms
 
     public function submit(): void
     {
+        // Check if the input data has changed
+        if ($this->previousData === $this->data) {
+            // If no changes, do not proceed with saving
+            Notification::make()
+                ->title('No Changes Made')
+                ->body('No changes detected. Please modify the inputs to save.')
+                ->warning()
+                ->send();
+            return; // Early return to prevent saving
+        }
+    
         // Update the order with the new payment data
         $this->order->payment_method = $this->data['payment_method'] ?? $this->order->payment_method;
         $this->order->amount_paid = $this->data['amount_paid'] ?? $this->order->amount_paid;
         $this->order->service_charge = $this->data['service_charge'] ?? $this->order->service_charge;
         $this->order->change_amount = $this->change_amount;
-
+    
         // Calculate the new total amount
         $this->order->total_amount = $this->total_amount;
-
+    
         // Save the order to the database
         $this->order->save();
-
+    
         // Optionally, emit an event or flash message to indicate success
         Notification::make()
             ->title('Payment Placed Successfully')
             ->body('Payment successfully processed!')
             ->success()
             ->send();
-
+    
+        // Store the current data as previous data for next comparison
+        $this->previousData = $this->data;
+    
         // Close the modal after saving
-
-        // Emit event to close the modal
         $this->dispatch('closeModal');
     }
+    
 
     public function render()
     {
@@ -132,13 +150,7 @@ class TableOrderComponent extends Component implements HasForms
         ]);
     }
 
-    // public function render()
-    // {
-    //     Log::info('Service Charge: ', ['service_charge' => $this->data['service_charge']]);
-    //     return view('livewire.table-order-component', [
-    //         'order' => $this->order,
-    //     ]);
-    // }
+  
 
 }
 

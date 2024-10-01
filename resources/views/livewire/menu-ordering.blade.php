@@ -14,7 +14,7 @@
             <x-filament::button outlined size="sm" color="coral" wire:click="showAllItems"
                 class="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:bg-black transition-all duration-300 {{ is_null($selectedCategory) ? 'ring-2 ring-primary-500' : '' }}">
                 <div class="flex items-center gap-2">
-                    <span class="text-3xl mb-2">🍽️</span> <!-- Default icon for "All Items" -->
+                    <span class="text-3xl mb-2">🍽️</span>
                     <h3 class="font-bold text-sm">All Items</h3>
                     <p class="text-xs text-gray-600 dark:text-gray-400">{{ $totalItems }} items</p>
                 </div>
@@ -74,10 +74,10 @@
         </div>
     </div>
 
-           
+
 
     {{-- Invoice Sidebar --}}
-    <div class="w-1/4 min-w-[300px]">
+    <div class="w-/ min-w-[300px]">
         <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg h-screen sticky top-0 overflow-y-auto">
             <h2 class="text-2xl font-bold mb-4">Invoice</h2>
 
@@ -107,7 +107,7 @@
                 </div>
                 <div class="flex justify-between mb-2">
                     <span>Service Charge</span>
-                    
+
                     <span> ₦ {{ number_format($tax, 2) }}</span>
                 </div>
                 <div

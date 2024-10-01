@@ -257,28 +257,94 @@ class MenuOrdering extends Component implements HasForms
 
     public function placeOrder()
     {
-        // try {
-        //     // Validate using the existing validation rules
-        //     $this->validate([
-        //         'customerType' => 'required|in:guest,walkin',
-        //         'diningOption' => 'required|in:dinein,takeout',
-        //         'selectedTable' => 'required_if:diningOption,dinein',
-        //         'selectedGuest' => 'required_if:customerType,guest',
-        //         'billingOption' => 'required_if:customerType,guest|in:charge_room,restaurant',
-        //         'paymentMethod' => 'required_if:billingOption,restaurant|required_if:customerType,walkin|in:cash,card,transfer',
-        //     ], [
-        //         'customerType.required' => 'Please select a customer type.',
-        //         'diningOption.required' => 'Please select a dining option.',
-        //         'selectedTable.required_if' => 'Please select a table for dine-in orders.',
-        //         'selectedGuest.required_if' => 'Please select a guest for hotel guest orders.',
-        //         'billingOption.required_if' => 'Please select a billing option for hotel guests.',
-        //         'paymentMethod.required_if' => 'Please select a payment method.',
-        //     ]);
-
-        // Get data from the form
+        // Validate that the required fields are filled based on customerType and diningOption
+        if (!$this->customerType) {
+            Notification::make()
+                ->title('Missing Customer Type')
+                ->body('Please select a customer type before placing an order.')
+                ->warning()
+                ->send();
+            return;
+        }
+    
+        if ($this->customerType === 'walkin') {
+            if (!$this->diningOption) {
+                Notification::make()
+                    ->title('Missing Dining Option')
+                    ->body('Please select a dining option for the walk-in customer.')
+                    ->warning()
+                    ->send();
+                return;
+            }
+    
+            if ($this->diningOption === 'dinein' && !$this->selectedTable) {
+                Notification::make()
+                    ->title('Missing Table Selection')
+                    ->body('Please select a table for dine-in customers.')
+                    ->warning()
+                    ->send();
+                return;
+            }
+            if (!$this->paymentMethod) {
+                Notification::make()
+                    ->title('Missing Payment Method')
+                    ->body('Please select a payment method before placing the order.')
+                    ->warning()
+                    ->send();
+                return;
+            }
+        }
+    
+        if ($this->customerType === 'guest') {
+            if (!$this->selectedGuest) {
+                Notification::make()
+                    ->title('Missing Guest Selection')
+                    ->body('Please select a guest with a confirmed reservation.')
+                    ->warning()
+                    ->send();
+                return;
+            }
+    
+            if (!$this->diningOption) {
+                Notification::make()
+                    ->title('Missing Dining Option')
+                    ->body('Please select a dining option for the guest.')
+                    ->warning()
+                    ->send();
+                return;
+            }
+    
+            if ($this->diningOption === 'dinein' && !$this->selectedTable) {
+                Notification::make()
+                    ->title('Missing Table Selection')
+                    ->body('Please select a table for the dine-in guest.')
+                    ->warning()
+                    ->send();
+                return;
+            }
+    
+            if ($this->diningOption === 'takeout' && !$this->billingOption) {
+                Notification::make()
+                    ->title('Missing Billing Option')
+                    ->body('Please select a billing option for takeout (charge to room or settle in restaurant).')
+                    ->warning()
+                    ->send();
+                return;
+            }
+    
+            if ($this->billingOption === 'restaurant' && !$this->paymentMethod) {
+                Notification::make()
+                    ->title('Missing Payment Method')
+                    ->body('Please select a payment method for the guest.')
+                    ->warning()
+                    ->send();
+                return;
+            }
+        }
+    
+        // Proceed with placing the order after validation
         $data = $this->form->getState();
-
-        // Create the order
+    
         $order = Order::create([
             'user_id' => auth()->id(),
             'customer_type' => $data['customerType'] ?? null,
@@ -289,7 +355,7 @@ class MenuOrdering extends Component implements HasForms
             'dining_option' => $data['diningOption'] ?? null,
             'billing_option' => $data['billingOption'] ?? null,
         ]);
-
+    
         // Create order items
         foreach ($this->cartItems as $itemId => $item) {
             OrderItem::create([
@@ -299,28 +365,19 @@ class MenuOrdering extends Component implements HasForms
                 'price' => $item['price'],
             ]);
         }
-
+    
         // Show success notification
         Notification::make()
             ->title('Order Placed Successfully')
             ->body('Your order has been placed and is being processed.')
             ->success()
             ->send();
-
-        // Reset order state
+    
+        // Reset order state after successful order placement
         $this->resetOrderState();
-
-        // } catch (\Illuminate\Validation\ValidationException $e) {
-        //     // Gather and display validation error messages
-        //     $errors = $e->validator->errors()->all();
-        //     Notification::make()
-        //         ->title('Validation Errors')
-        //         ->body(implode("\n", $errors))
-        //         ->danger()
-        //         ->send();
-        // }
     }
-
+    
+    
     public function render()
     {
         return view('livewire.menu-ordering', [
