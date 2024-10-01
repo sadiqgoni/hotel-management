@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>White24 Palace</title>
     <style>
+        * {
+            font-family: DejaVu Sans, sans-serif;
+        }
+
         body {
             font-family: Arial, sans-serif;
             font-size: 16px;

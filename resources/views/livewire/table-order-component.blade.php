@@ -34,13 +34,14 @@
                 <tr>
                     <td class="border px-4 py-2">Service Charge</td>
                     <td class="border px-4 py-2">
-                        @if(is_null($service_charge))
+                        @if(is_null($data['service_charge']))
                             N/A
                         @else
-                            ₦{{ number_format($service_charge ?? 0, 2) }}
+                            ₦{{ number_format($data['service_charge'], 2) }}
                         @endif
                     </td>
                 </tr>
+
                 <!-- Total Amount (Updated with Service Charge) -->
                 <tr>
                     <td class="border px-4 py-2">Total Amount (Updated)</td>
@@ -55,16 +56,17 @@
             </tbody>
         </table>
 
-        <x-filament::button type="submit"  wire:click="submit" class="w-full mt-4" color="primary" icon="heroicon-m-sparkles">
+        <x-filament::button type="submit" wire:click="submit" class="w-full mt-4" color="primary"
+            icon="heroicon-m-sparkles">
             Process Payment </x-filament::button>
-        
+
     </form>
 </div>
 
-    @script
-    <script>
-        $wire.on('closeModal', () => {
-            $('#add').modal('hide');
-        });
-    </script>
-    @endscript
+@script
+<script>
+    $wire.on('closeModal', () => {
+        $('#add').modal('hide');
+    });
+</script>
+@endscript

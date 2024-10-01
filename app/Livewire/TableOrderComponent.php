@@ -56,16 +56,33 @@ class TableOrderComponent extends Component implements HasForms
 
                 TextInput::make('amount_paid')
                     ->label('Amount Paid')
-                    ->numeric()
-                    ->reactive()
+                    ->live(onBlur: true)
                     ->required()
-                    ->afterStateUpdated(fn($state) => $this->calculateChange()),
+                    ->afterStateUpdated(function ($set, $get, $state) {
+                        // Sanitize the input: remove anything that's not a number or a decimal point
+                        $amount_paid = preg_replace('/[^0-9.]/', '', $get('amount_paid', 0));
+
+                        // Set the sanitized value back
+                        $set('amount_paid', $amount_paid);
+
+                        // Optional: Trigger the change calculation after sanitization
+                        $this->calculateChange();
+                    }),
 
                 TextInput::make('service_charge')
                     ->label('Service Charge')
-                    ->numeric()
-                    ->reactive()
-                    ->afterStateUpdated(fn($state) => $this->calculateChange()),
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(function ($set, $get, $state) {
+                        // Sanitize service charge input
+                        $service_charge = preg_replace('/[^0-9.]/', '', $get('service_charge', 0));
+
+                        // Set the sanitized value back
+                        $set('service_charge', $service_charge);
+
+                        // Recalculate totals after sanitizing
+                        $this->calculateChange();
+                    }),
+
             ])
             ->statePath('data');
     }
@@ -74,8 +91,10 @@ class TableOrderComponent extends Component implements HasForms
     {
         $serviceCharge = (float) ($this->data['service_charge'] ?? 0.0);
         $amountPaid = (float) ($this->data['amount_paid'] ?? 0.0);
-        $this->total_amount = (float) $this->order->total_amount + $serviceCharge;
-        $this->change_amount = $amountPaid - $this->total_amount;
+
+        $this->total_amount = round((float) $this->order->total_amount + $serviceCharge, 2);
+        $this->change_amount = round($amountPaid - $this->total_amount, 2);
+
     }
 
     public function submit(): void
@@ -84,6 +103,7 @@ class TableOrderComponent extends Component implements HasForms
         $this->order->payment_method = $this->data['payment_method'] ?? $this->order->payment_method;
         $this->order->amount_paid = $this->data['amount_paid'] ?? $this->order->amount_paid;
         $this->order->service_charge = $this->data['service_charge'] ?? $this->order->service_charge;
+        $this->order->change_amount = $this->change_amount;
 
         // Calculate the new total amount
         $this->order->total_amount = $this->total_amount;
@@ -108,8 +128,18 @@ class TableOrderComponent extends Component implements HasForms
     {
         return view('livewire.table-order-component', [
             'order' => $this->order,
+            'service_charge' => $this->data['service_charge'] ?? null, // Make sure it's passed here
         ]);
     }
+
+    // public function render()
+    // {
+    //     Log::info('Service Charge: ', ['service_charge' => $this->data['service_charge']]);
+    //     return view('livewire.table-order-component', [
+    //         'order' => $this->order,
+    //     ]);
+    // }
+
 }
 
 
