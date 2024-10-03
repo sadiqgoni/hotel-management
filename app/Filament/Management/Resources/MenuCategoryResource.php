@@ -26,7 +26,11 @@ class MenuCategoryResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-view-columns';
     protected static ?string $navigationLabel = 'Menu Categories';
     protected static ?string $navigationGroup = 'Menu Management';
-
+    
+    // public static function getLabel(): string
+    // {
+    //     return 'Menu Categories';
+    // }
     public static function form(Form $form): Form
     {
         return $form

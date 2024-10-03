@@ -25,6 +25,10 @@ class StaffManagementResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
     protected static ?string $navigationGroup = 'Management';
+    // public static function getLabel(): string
+    // {
+    //     return 'Staffs';
+    // }
 
     public static function form(Form $form): Form
     {

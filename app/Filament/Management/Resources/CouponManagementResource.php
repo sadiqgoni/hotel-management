@@ -33,6 +33,10 @@ class CouponManagementResource extends Resource
     protected static ?string $navigationGroup = 'Marketing';
     protected static ?string $pluralModelLabel = 'Coupons';
 
+    // public static function getLabel(): string
+    // {
+    //     return 'Marketing';
+    // }
     public static function form(Form $form): Form
     {
         return $form

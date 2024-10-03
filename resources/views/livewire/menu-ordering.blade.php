@@ -1,4 +1,4 @@
-<div class="flex bg-platinum dark:bg-gray-900 dark:text-gray-100">
+<div class="flex bg-platinum dark:text-gray-100">
     {{-- Main Content Area --}}
     <div class="flex-grow p-6 h-screen overflow-y-auto">
         <!-- Search bar -->

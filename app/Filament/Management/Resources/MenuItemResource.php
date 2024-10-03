@@ -33,6 +33,10 @@ class MenuItemResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-archive-box-arrow-down';
     protected static ?string $navigationLabel = 'Menu Items';
     protected static ?string $navigationGroup = 'Menu Management';
+    // public static function getLabel(): string
+    // {
+    //     return 'Menu Items';
+    // }
 
     public static function form(Form $form): Form
     {

@@ -56,7 +56,7 @@
             </tbody>
         </table>
 
-        <x-filament::button type="submit" wire:click="submit" class="w-full mt-4" color="primary"
+        <x-filament::button type="submit"  class="w-full mt-4" color="primary"
             icon="heroicon-m-sparkles">
             Process Payment </x-filament::button>
 

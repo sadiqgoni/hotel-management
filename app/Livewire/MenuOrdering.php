@@ -281,7 +281,7 @@ class MenuOrdering extends Component implements HasForms
                 Notification::make()
                     ->title('Missing Table Selection')
                     ->body('Please select a table for dine-in customers.')
-                    ->warning()
+                    ->danger()
                     ->send();
                 return;
             }
@@ -318,7 +318,7 @@ class MenuOrdering extends Component implements HasForms
                 Notification::make()
                     ->title('Missing Table Selection')
                     ->body('Please select a table for the dine-in guest.')
-                    ->warning()
+                    ->danger()
                     ->send();
                 return;
             }
