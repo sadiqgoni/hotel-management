@@ -13,4 +13,6 @@ class RestaurantReport extends Page
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'Restaurant Report';
+    protected static ?string $navigationGroup = 'General Reports';
+
 }

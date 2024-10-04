@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Management\Pages\OrderReport;
+use App\Filament\Management\Pages\Printer;
 use App\Filament\Management\Pages\RestaurantReport;
 use App\Filament\Management\Resources\UserResource;
 use App\Filament\Management\Resources\StaffManagementResource;
@@ -13,6 +14,7 @@ use Filament\Navigation\MenuItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -39,6 +41,17 @@ class ManagementPanelProvider extends PanelProvider
             ->login()
             ->colors([
                 'primary' => Color::Indigo,
+            ])
+            ->assets([
+                Js::make('custom-javascript', resource_path('js/app.js')),
+                Js::make('printer', resource_path('js/printer.js')),
+            ])
+            ->navigationGroups([
+                'General Reports',
+                'Management', 
+                'Marketing',  
+                'Menu Management'  ,
+                'Configurations'       
             ])
             ->userMenuItems([
                 MenuItem::make()
@@ -92,6 +105,7 @@ class ManagementPanelProvider extends PanelProvider
             Pages\Dashboard::class,
             RestaurantReport::class,
             OrderReport::class, 
+            Printer::class,
         ];
     }
 
