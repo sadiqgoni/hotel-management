@@ -39,7 +39,7 @@ class MenuOrdering extends Component implements HasForms
     public $categories = [];
     public $selectedCategory = null;
     public $selectedCategoryName = '';
-
+   // Listen for the event
     public $diningOption = '';
     public $billingOption = '';
     public $paymentMethod = '';
@@ -266,7 +266,7 @@ class MenuOrdering extends Component implements HasForms
                 ->send();
             return;
         }
-    
+
         if ($this->customerType === 'walkin') {
             if (!$this->diningOption) {
                 Notification::make()
@@ -276,7 +276,7 @@ class MenuOrdering extends Component implements HasForms
                     ->send();
                 return;
             }
-    
+
             if ($this->diningOption === 'dinein' && !$this->selectedTable) {
                 Notification::make()
                     ->title('Missing Table Selection')
@@ -294,7 +294,7 @@ class MenuOrdering extends Component implements HasForms
                 return;
             }
         }
-    
+
         if ($this->customerType === 'guest') {
             if (!$this->selectedGuest) {
                 Notification::make()
@@ -304,7 +304,7 @@ class MenuOrdering extends Component implements HasForms
                     ->send();
                 return;
             }
-    
+
             if (!$this->diningOption) {
                 Notification::make()
                     ->title('Missing Dining Option')
@@ -313,7 +313,7 @@ class MenuOrdering extends Component implements HasForms
                     ->send();
                 return;
             }
-    
+
             if ($this->diningOption === 'dinein' && !$this->selectedTable) {
                 Notification::make()
                     ->title('Missing Table Selection')
@@ -322,7 +322,7 @@ class MenuOrdering extends Component implements HasForms
                     ->send();
                 return;
             }
-    
+
             if ($this->diningOption === 'takeout' && !$this->billingOption) {
                 Notification::make()
                     ->title('Missing Billing Option')
@@ -331,7 +331,7 @@ class MenuOrdering extends Component implements HasForms
                     ->send();
                 return;
             }
-    
+
             if ($this->billingOption === 'restaurant' && !$this->paymentMethod) {
                 Notification::make()
                     ->title('Missing Payment Method')
@@ -341,10 +341,10 @@ class MenuOrdering extends Component implements HasForms
                 return;
             }
         }
-    
+
         // Proceed with placing the order after validation
         $data = $this->form->getState();
-    
+
         $order = Order::create([
             'user_id' => auth()->id(),
             'customer_type' => $data['customerType'] ?? null,
@@ -355,7 +355,7 @@ class MenuOrdering extends Component implements HasForms
             'dining_option' => $data['diningOption'] ?? null,
             'billing_option' => $data['billingOption'] ?? null,
         ]);
-    
+
         // Create order items
         foreach ($this->cartItems as $itemId => $item) {
             OrderItem::create([
@@ -365,22 +365,23 @@ class MenuOrdering extends Component implements HasForms
                 'price' => $item['price'],
             ]);
         }
-    
+
         // Show success notification
         Notification::make()
             ->title('Order Placed Successfully')
             ->body('Your order has been placed and is being processed.')
             ->success()
             ->send();
-    
+
         // Reset order state after successful order placement
         $this->resetOrderState();
     }
-    
-    
+
+   
     public function render()
     {
         return view('livewire.menu-ordering', [
+
             'menuItems' => $this->filteredMenuItems(),
             'cartItems' => $this->cartItems,
             'subtotal' => $this->subtotal,

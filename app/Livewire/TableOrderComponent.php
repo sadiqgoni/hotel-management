@@ -55,7 +55,8 @@ class TableOrderComponent extends Component implements HasForms
                     ->options([
                         'cash' => 'Cash',
                         'card' => 'Card',
-                        'mobile_transfer' => 'Mobile Transfer',
+                        'transfer' => 'Bank Transfer',
+                        
                     ])
                     ->required(),
 

@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Management\Pages\GuestForm;
 use App\Filament\Management\Pages\OrderReport;
 use App\Filament\Management\Pages\Printer;
 use App\Filament\Management\Pages\RestaurantReport;
@@ -106,6 +107,7 @@ class ManagementPanelProvider extends PanelProvider
             RestaurantReport::class,
             OrderReport::class, 
             Printer::class,
+            GuestForm::class
         ];
     }
 

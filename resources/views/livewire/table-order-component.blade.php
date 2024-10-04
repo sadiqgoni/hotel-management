@@ -68,5 +68,6 @@
     $wire.on('closeModal', () => {
         $('#add').modal('hide');
     });
+    
 </script>
 @endscript

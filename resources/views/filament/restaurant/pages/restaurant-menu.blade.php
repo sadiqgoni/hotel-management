@@ -20,19 +20,20 @@
                 </div>
             </x-filament::button>
             @foreach ($categories as $category)
-                <x-filament::button outlined size="sm" color="coral" wire:click="filterByCategory({{ $category->id }})"
-                    class="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:bg-black transition-all duration-300 {{ $selectedCategory == $category->id ? 'ring-2 ring-primary-500' : '' }}">
+                <x-filament::button outlined size="sm" color="coral" wire:click="filterByCategory({{ $category['id'] }})"
+                    class="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:bg-black transition-all duration-300 {{ $selectedCategory == $category['id'] ? 'ring-2 ring-primary-500' : '' }}">
                     <div class="flex items-center gap-2">
-                        <span class="text-3xl mb-2">{{ $category->icon }}</span>
-                        <h3 class="font-bold text-sm">{{ $category->name }}</h3>
-                        <p class="text-xs text-gray-600 dark:text-gray-400">
-                            {{ $category->menu_items_count ?? 'No' }}
-                            {{ $category->menu_items_count == 1 ? 'item' : 'items' }}
-                        </p>
+                        <span class="text-3xl mb-2">{{ $category['icon'] }}</span>
+                        <h3 class="font-bold text-sm">{{ $category['name'] }}</h3>
 
+                        <p class="text-xs text-gray-600 dark:text-gray-400">
+                            {{ $category['menu_items_count'] ?? 'No' }}
+                            {{ $category['menu_items_count'] == 1 ? 'item' : 'items' }}
+                        </p>
                     </div>
                 </x-filament::button>
             @endforeach
+
         </div>
 
         {{-- Menu Items Section --}}
@@ -46,35 +47,33 @@
                     class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md transition-all duration-300 hover:shadow-xl">
                     <div>
                         <div class="flex-grow min-h-[200px]"> <!-- Set a minimum height -->
-                            <img src="{{ $item->image ? asset('storage/' . $item->image) : asset('hotel2.png') }}"
-                                alt="{{ $item->name }}" class="w-full h-32 rounded-md object-cover mb-4" />
-                            <h4 class="font-bold text-lg text-center mb-2">{{ $item->name }}</h4>
+                            <img src="{{ $item['image'] ? asset('storage/' . $item['image']) : asset('hotel2.png') }}"
+                                alt="{{ $item['name'] }}" class="w-full h-32 rounded-md object-cover mb-4" />
+                            <h4 class="font-bold text-lg text-center mb-2">{{ $item['name'] }}</h4>
                             <p class="text-sm text-gray-600 text-center mb-2">
-                                {{ $item->description ?: 'No description available.' }}
+                                {{ $item['description'] ?: 'No description available.' }}
                             </p> <!-- Default text -->
-                            <p class="font-bold text-lg text-center mb-4"> ₦ {{ number_format($item->price, 2) }}</p>
+                            <p class="font-bold text-lg text-center mb-4"> ₦ {{ number_format($item['price'], 2) }}</p>
                         </div>
 
                         <div class="flex items-center justify-center space-x-2 gap-2 mt-4">
-                            <button wire:click="removeFromCart({{ $item->id }})"
+                            <button wire:click="removeFromCart({{ $item['id'] }})"
                                 class="px-2 py-1.6 bg-gray-300 dark:bg-black rounded-full text-gray-600 font-bold">
                                 -
                             </button>
-                            <span class="text-lg font-semibold">{{ $cartItems[$item->id]['quantity'] ?? 0 }}</span>
-                            <button wire:click="addToCart({{ $item->id }})"
+                            <span class="text-lg font-semibold">{{ $cartItems[$item['id']]['quantity'] ?? 0 }}</span>
+                            <button wire:click="addToCart({{ $item['id'] }})"
                                 class="px-1.5 py-1.6 bg-primary-500 rounded-full text-white hover:bg-primary-600 transition-colors duration-300">
                                 +
                             </button>
                         </div>
                     </div>
-
                 </x-filament-tables::container>
             @endforeach
 
+
         </div>
     </div>
-
-
 
     {{-- Invoice Sidebar --}}
     <div class="w-/ min-w-[300px]">
@@ -126,9 +125,7 @@
                 Place Order
             </x-filament::button>
 
-            <button wire:click="addToCart({{ $item->id }})"
-                x-on:keydown.window.prevent.ctrl.1="$wire.addToCart({{ $item->id }})">
-
         </div>
     </div>
+    
 </div>
