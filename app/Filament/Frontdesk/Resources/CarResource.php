@@ -3,26 +3,35 @@
 namespace App\Filament\Frontdesk\Resources;
 
 use App\Filament\Frontdesk\Resources\CarResource\Pages;
-use App\Filament\Frontdesk\Resources\CarResource\RelationManagers;
 use App\Models\Car;
+use App\Models\Guest;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms;
-use Filament\Forms\Components\Card;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Card;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\BadgeColumn;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+
 
 class CarResource extends Resource
 {
     protected static ?string $model = Car::class;
 
+
+
     protected static ?string $navigationIcon = 'heroicon-o-truck';
     protected static ?string $navigationGroup = 'Transport Management';
+
+
+    protected static ?int $navigationSort = 1;
 
 
     public static function form(Form $form): Form
@@ -30,22 +39,32 @@ class CarResource extends Resource
         return $form
             ->schema([
                 Card::make()
-                ->schema([
-                    Select::make('guest_id')
-                    ->label('Guest')
-                    ->relationship('guest', 'name') // Assuming you have a guest model
-                    ->required(),
-                Select::make('car_id')
-                    ->label('Car')
-                    ->relationship('car', 'car_name')
-                    ->required(),
-                DatePicker::make('rental_start')
-                    ->label('Rental Start')
-                    ->required(),
-                DatePicker::make('rental_end')
-                    ->label('Rental End')
-                    ->required(),
-                ])
+                    ->schema([
+                        Section::make('')
+                            ->schema([
+                                TextInput::make('car_name')
+                                    ->label('Car Name')
+                                    ->required(),
+                                TextInput::make('car_type')
+                                    ->label('Car Type')
+                                    ->required(),
+                                TextInput::make('number_plate')
+                                    ->label('Number Plate')
+                                    ->required(),
+                                Select::make('availability_status')
+                                    ->label('Availability')
+                                    ->options([
+                                        'available' => 'Available',
+                                        'rented' => 'Rented',
+                                        'maintenance' => 'Maintenance',
+                                    ]),
+                                TextInput::make('rate_per_hour')
+                                    ->label('Rate Per Hour')
+                                    ->numeric()
+                                    ->required(),
+                            ])
+                            ->columns(2),
+                    ])
             ]);
     }
 
@@ -53,17 +72,23 @@ class CarResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('guest.name')->label('Guest'),
-                TextColumn::make('car.car_name')->label('Car'),
-                TextColumn::make('rental_start')->label('Start Date'),
-                TextColumn::make('rental_end')->label('End Date'),
-                TextColumn::make('total_amount')->label('Total Amount')->money('NGN', true),
+                TextColumn::make('id')
+                    ->sortable()
+                    ->searchable(),
+
+                TextColumn::make('car_name')->label('Car Name'),
+                TextColumn::make('car_type')->label('Car Type'),
+                TextColumn::make('number_plate')->label('Number Plate'),
+                TextColumn::make('availability_status')->label('Status')->sortable(),
+                TextColumn::make('rate_per_hour')->label('Rate Per Hour')->money('NGN', true)
+
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -88,3 +113,4 @@ class CarResource extends Resource
         ];
     }
 }
+
