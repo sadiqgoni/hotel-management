@@ -30,7 +30,7 @@
 
         window.print();
 
-        window.location.reload(); // Reload to restore the original page after print
+        window.location.reload(); 
     });
 </script>
 @endscript

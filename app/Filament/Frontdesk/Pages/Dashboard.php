@@ -50,7 +50,7 @@ class Dashboard extends BaseDashboard
     public function getWidgets(): array
     {
         $widgets = [
-            StatsOverview::class,  
+            // StatsOverview::class,  
         ];
 
         if ($this->showLatestChecked) {

@@ -46,7 +46,7 @@
         }
 
         p b, td.number, th.number {
-            text-align: right; /* Align numbers to the right */
+            text-align: right; 
         }
 
         div.total-section {
@@ -57,7 +57,7 @@
 </head>
 
 <body>
-  @include('reports.partials.order-data')
+  @include(view: 'reports.partials.order-data')
 </body>
 </html>
 

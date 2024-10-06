@@ -14,74 +14,74 @@ use Filament\Widgets\StatsOverviewWidget\Card;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\HtmlString;
 
-class StatsOverview extends BaseWidget
-{
-    public $activeCard = 'active';  // Default active card
-    protected static ?string $pollingInterval = '5s';
+// class StatsOverview extends BaseWidget
+// {
+//     public $activeCard = 'active';  // Default active card
+//     protected static ?string $pollingInterval = '5s';
 
-    // Method to update active card
-    public function setActiveCard($card)
-    {
-        $this->activeCard = $card;
-    }
+//     // Method to update active card
+//     public function setActiveCard($card)
+//     {
+//         $this->activeCard = $card;
+//     }
 
-    // Method to generate common card styles
-    protected function getCardStyles(string $cardType): array
-    {
-        $isActive = $this->activeCard === $cardType;
+//     // Method to generate common card styles
+//     protected function getCardStyles(string $cardType): array
+//     {
+//         $isActive = $this->activeCard === $cardType;
 
-        return [
-            'style' => $isActive
-                ? 'background-color: #ffffff; color: #007bff; border-radius: 12px; border: 2px solid #007bff; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);'
-                : 'background-color: #ffffff; color: #333; border-radius: 12px; border: 3px solid #28a745; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);',
-            'class' => 'cursor-pointer transition duration-200 ease-in-out transform hover:scale-105 hover:shadow-lg',
-            'wire:click' => "\$set('activeCard', '$cardType')",
-        ];
-    }
+//         return [
+//             'style' => $isActive
+//                 ? 'background-color: #ffffff; color: #007bff; border-radius: 12px; border: 2px solid #007bff; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);'
+//                 : 'background-color: #ffffff; color: #333; border-radius: 12px; border: 3px solid #28a745; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);',
+//             'class' => 'cursor-pointer transition duration-200 ease-in-out transform hover:scale-105 hover:shadow-lg',
+//             'wire:click' => "\$set('activeCard', '$cardType')",
+//         ];
+//     }
 
-    // Method to generate card components
-    protected function createCard(string $title, int $count, string $description, string $icon, string $cardType, string $event): Card
-    {
-        return Card::make($title, $count)
-            ->description($description)
-            ->descriptionIcon($icon)
-            ->color($this->activeCard === $cardType ? '' : 'success')
-            ->extraAttributes(array_merge($this->getCardStyles($cardType), [
-                'x-on:click' => "\$dispatch('$event')",
-            ]));
-    }
+//     // Method to generate card components
+//     protected function createCard(string $title, int $count, string $description, string $icon, string $cardType, string $event): Card
+//     {
+//         return Card::make($title, $count)
+//             ->description($description)
+//             ->descriptionIcon($icon)
+//             ->color($this->activeCard === $cardType ? '' : 'success')
+//             ->extraAttributes(array_merge($this->getCardStyles($cardType), [
+//                 'x-on:click' => "\$dispatch('$event')",
+//             ]));
+//     }
 
-    // Get statistics array
-    protected function getStats(): array
-    {
-        return [
-            $this->getCheckedInReservations(),
-            $this->getCheckedOutReservations(),
-            $this->getConfirmedReservations(),
-        ];
-    }
+//     // Get statistics array
+//     protected function getStats(): array
+//     {
+//         return [
+//             $this->getCheckedInReservations(),
+//             $this->getCheckedOutReservations(),
+//             $this->getConfirmedReservations(),
+//         ];
+//     }
 
-    // Card for Active (Checked-In) Reservations
-    protected function getCheckedInReservations(): Card
-    {
-        $count = CheckInCheckOut::where('status', 'Checked In')->count();
-        return $this->createCard('Checked-In Guests', $count, 'Guests currently checked in', 'heroicon-o-calendar', 'active', 'showCheckedInGuestsTable');
-    }
+//     // Card for Active (Checked-In) Reservations
+//     protected function getCheckedInReservations(): Card
+//     {
+//         $count = CheckInCheckOut::where('status', 'Checked In')->count();
+//         return $this->createCard('Checked-In Guests', $count, 'Guests currently checked in', 'heroicon-o-calendar', 'active', 'showCheckedInGuestsTable');
+//     }
 
-    // Card for Checked-Out Reservations
-    protected function getCheckedOutReservations(): Card
-    {
-        $count = CheckInCheckOut::where('status', 'Checked Out')->count();
-        return $this->createCard('Checked-Out Guests', $count, 'Guests who have checked out', 'heroicon-o-check', 'checkedOut', 'showCheckedOutGuestsTable');
-    }
+//     // Card for Checked-Out Reservations
+//     protected function getCheckedOutReservations(): Card
+//     {
+//         $count = CheckInCheckOut::where('status', 'Checked Out')->count();
+//         return $this->createCard('Checked-Out Guests', $count, 'Guests who have checked out', 'heroicon-o-check', 'checkedOut', 'showCheckedOutGuestsTable');
+//     }
 
-    // Card for Confirmed Reservations
-    protected function getConfirmedReservations(): Card
-    {
-        $count = Reservation::where('status', 'Confirmed')->count();
-        return $this->createCard('Confirmed Reservations', $count, 'Confirmed Reservations', 'heroicon-o-calendar-days', 'confirmedReservation', 'showConfirmedReservationTable');
-    }
-}
+//     // Card for Confirmed Reservations
+//     protected function getConfirmedReservations(): Card
+//     {
+//         $count = Reservation::where('status', 'Confirmed')->count();
+//         return $this->createCard('Confirmed Reservations', $count, 'Confirmed Reservations', 'heroicon-o-calendar-days', 'confirmedReservation', 'showConfirmedReservationTable');
+//     }
+// }
 
 
 // class StatsOverview extends BaseWidget

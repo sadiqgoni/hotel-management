@@ -52,6 +52,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Room::class, 'housekeeper_id');
     }
+    
     public function maintenanceRequest(): HasMany
     {
         return $this->hasMany(MaintenanceRequest::class,);
@@ -59,5 +60,9 @@ class User extends Authenticatable
     public function order(): HasMany
     {
         return $this->hasMany(Order::class,);
+    }
+    public function checkIn()
+    {
+        return $this->hasMany(CheckIn::class);
     }
 }

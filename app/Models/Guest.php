@@ -34,5 +34,14 @@ class Guest extends Model
     {
         return $this->hasMany(Order::class);
     }
+    public function checkIn()
+    {
+        return $this->hasMany(CheckIn::class);
+    }
+
+    public function carRental()
+    {
+        return $this->hasMany(CarRental::class);
+    }
 
 }

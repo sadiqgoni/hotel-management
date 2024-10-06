@@ -2,9 +2,13 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Frontdesk\Pages\CheckOutPage;
 use App\Filament\Frontdesk\Pages\Dashboard;
 use App\Filament\Frontdesk\Pages\ReservationCalendar;
+use App\Filament\Frontdesk\Resources\CarRentalResource;
+use App\Filament\Frontdesk\Resources\CarResource;
 use App\Filament\Frontdesk\Resources\CheckInCheckOutResource;
+use App\Filament\Frontdesk\Resources\CheckInResource;
 use App\Filament\Frontdesk\Resources\GroupReservationResource;
 use App\Filament\Frontdesk\Resources\GuestResource;
 use App\Filament\Frontdesk\Resources\ReservationResource;
@@ -12,6 +16,7 @@ use App\Filament\Frontdesk\Resources\ReservationWaitlistResource;
 use App\Filament\Frontdesk\Resources\RoomResource;
 use App\Filament\Frontdesk\Resources\RoomTypeResource;
 use App\Filament\Housekeeper\Resources\MaintenanceRequestResource;
+use App\Filament\Frontdesk\Pages\Sample;
 use App\Http\Middleware\RoleRedirect;
 use App\Models\MaintenanceRequest;
 use App\Models\RoomType;
@@ -51,33 +56,37 @@ class FrontdeskPanelProvider extends PanelProvider
                 'primary' => Color::hex('#166534'),
             ])
             ->navigationGroups([
-                'Operations Management', 
-                'Rooms Management',           
+                'Daily Operations',
+                'Operations Management',
+                'Rooms Management',
+                'Guest Management',
+                'Transport Management',
+                'Group Management',
             ])
             ->globalSearch(false)
             ->globalSearchKeyBindings(['command+', 'ctrl+k'])
-            
+
             ->brandLogo(asset('images/hotel3.jpg'))
             ->darkModeBrandLogo(asset('images/hotel2.png'))
             ->favicon(asset('images/hotel3.jpg'))
             ->brandLogoHeight('3.5rem')
             ->resources($this->getResources())
             ->pages($this->getPages())
-       
+
             ->userMenuItems([
                 MenuItem::make()
-                ->label('Management')
-                ->url('/management')
-                ->icon('heroicon-o-squares-2x2')
-                ->visible(fn(): bool => auth()->user()->role === 'Manager'),
+                    ->label('Management')
+                    ->url('/management')
+                    ->icon('heroicon-o-squares-2x2')
+                    ->visible(fn(): bool => auth()->user()->role === 'Manager'),
                 MenuItem::make()
-                ->label(label: 'Restaurant')
-                ->url('/restaurant')
-                ->icon('heroicon-o-squares-2x2')
-                ->visible(fn(): bool => auth()->user()->role === 'Manager')
-                ])
+                    ->label(label: 'Restaurant')
+                    ->url('/restaurant')
+                    ->icon('heroicon-o-squares-2x2')
+                    ->visible(fn(): bool => auth()->user()->role === 'Manager')
+            ])
             ->discoverWidgets(in: app_path('Filament/Frontdesk/Widgets'), for: 'App\\Filament\\Frontdesk\\Widgets')
-           
+
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -95,31 +104,33 @@ class FrontdeskPanelProvider extends PanelProvider
             ])
             ->plugins([
                 FilamentBackgroundsPlugin::make()
-                ->remember(200)
-                ->imageProvider(
-                    MyImages::make()
-                    ->directory('assets/background')
+                    ->remember(200)
+                    ->imageProvider(
+                        MyImages::make()
+                            ->directory('assets/background')
                     )
-                ->showAttribution(false),
+                    ->showAttribution(false),
+
                 FilamentFullCalendarPlugin::make()
-                ->selectable()
-                ->editable()
+                    ->selectable()
+                    ->editable()
                 // FilamentApexChartsPlugin::make()
-             ]);
+            ]);
     }
 
     protected function getResources(): array
     {
         return [
-            CheckInCheckOutResource::class,
+            CheckInResource::class,
             GuestResource::class,
             ReservationResource::class,
             RoomResource::class,
             RoomTypeResource::class,
             MaintenanceRequestResource::class,
             GroupReservationResource::class,
-            ReservationWaitlistResource::class
-
+            ReservationWaitlistResource::class,
+            CarRentalResource::class,
+            CarResource::class,
 
         ];
     }
@@ -127,7 +138,9 @@ class FrontdeskPanelProvider extends PanelProvider
     {
         return [
             Dashboard::class,
-            ReservationCalendar::class
+            ReservationCalendar::class,
+            CheckOutPage::class,
+
 
         ];
     }

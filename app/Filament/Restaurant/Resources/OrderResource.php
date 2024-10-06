@@ -86,8 +86,7 @@ class OrderResource extends Resource
                         'guest' => 'Guest',
                     ])
                     ->placeholder('Select Customer Type'),
-                // Tables\Filters\DateFilter::make('created_at')
-                //     ->label('Order Date'),
+               
                 Tables\Filters\SelectFilter::make('payment_method')
                     ->options([
                         'cash' => 'Cash',
@@ -102,8 +101,11 @@ class OrderResource extends Resource
                     ->icon('heroicon-o-banknotes')
                     ->modalContent(fn(Order $record) => view('filament.pages.order-table', ['order' => $record]))
                     ->color('success')
-                    ->modalWidth(\Filament\Support\Enums\MaxWidth::Medium),
-                Tables\Actions\Action::make('generateInvoice')
+                    ->modalWidth(\Filament\Support\Enums\MaxWidth::Medium)
+                   ->modalSubmitActionLabel('Close'),
+
+
+                     Tables\Actions\Action::make('generateInvoice')
                     ->label('Generate Invoice')
                     ->icon('heroicon-o-document-text')
                     ->url(fn(Order $record) => route('invoice.generate', $record))

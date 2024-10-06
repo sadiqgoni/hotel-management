@@ -38,7 +38,6 @@ class RoomResource extends Resource
     protected static ?string $modelLabel = 'Manage Rooms';
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
 
-
     public static function form(Form $form): Form
     {
         return $form
@@ -57,7 +56,6 @@ class RoomResource extends Resource
                                     ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                         // Fetch the selected Room Type
                                         $roomType = RoomType::find($state);
-
                                         if ($roomType) {
                                             // Set the price per night and max occupancy based on the selected Room Type
                                             $set('price_per_night', $roomType->base_price);
@@ -75,21 +73,17 @@ class RoomResource extends Resource
                                             } else {
                                                 $newRoomNumber = $roomPrefix . '001'; // First room number
                                             }
-
                                             $set('room_number', $newRoomNumber);
                                         }
                                     }),
-
                                 TextInput::make('room_number')
                                     ->label('Room Number')
                                     ->readOnly()
                                     ->placeholder('Auto-generated Room Number'),
-
                                 TextInput::make('price_per_night')
                                     ->label('Price per Night')
                                     ->placeholder('Auto-filled based on Room Type')
                                     ->readOnly(),
-
                                 TextInput::make('max_occupancy')
                                     ->label('Max Occupancy')
                                     ->placeholder('Auto-filled based on Room Type')
@@ -98,14 +92,12 @@ class RoomResource extends Resource
                                     ->label('Description')
                                     ->placeholder('Auto-filled based on Room Type')
                                     ->readOnly(),
-
                                 Forms\Components\Toggle::make('status')
                                     ->label('Availability')
                                     ->default(1)
                                     ->live(onBlur: true)
                                     ->helperText('Toggle this to mark the room as available or unavailable.')
                                     ->disabled(fn($get) => Reservation::where('room_id', $get('id'))->whereIn('status', ['Confirmed', 'Checked In'])->exists()),
-
                             ])
                             ->columns(2),
                     ]),
@@ -167,8 +159,7 @@ class RoomResource extends Resource
                     ->trueIcon('heroicon-o-check-badge')
                     ->falseIcon('heroicon-o-x-circle')
                     ->sortable(),
-                    TextColumn::make('note')
-                    
+                    TextColumn::make('note')                  
                     ->label('Special Instructions')
                     ->visible(fn() => $user->role !== 'FrontDesk') 
                     ->default('None')
@@ -201,8 +192,6 @@ class RoomResource extends Resource
                     ->label('Mark as Dirty & Assign Housekeeper')
                     ->icon('heroicon-o-user-plus')
                     ->hidden(condition: fn() => $user->role === 'Housekeeper')
-
-                    // ->visible(fn(Room $record): bool => $user->role === 'FrontDesk')
                     ->action(function (Room $record, array $data) {
                         $record->is_clean = 0; // Mark as dirty
                         $record->status = 0;
@@ -215,58 +204,47 @@ class RoomResource extends Resource
                             ->options(User::where('role', 'Housekeeper')->pluck('name', 'id'))
                             ->required(),
                             TextInput::make('note')
-                            ->label('Special Instructions')
-                            // ->action(function (Room $record, array $data) {
-                            //     $record->note = $data['note']; 
-                            //     $record->save();
-                            // })
+                            ->label('Special Instructions')                          
                             ->placeholder('Add any notes or special instructions for the housekeeper')
                             ->nullable(),
                     ]),
 
-                // Housekeeper: Mark room as "In Progress" when cleaning starts
-                Tables\Actions\Action::make('startCleaning')
+                    Tables\Actions\Action::make('startCleaning')
                     ->label('Start Cleaning')
                     ->icon('heroicon-o-play')
-                    //  ->hidden(condition: fn() => $user->role === 'Housekeeper')
-
-                    ->visible(fn(Room $record) => $user->role === 'Housekeeper' && $record->is_clean == 0 && $record->housekeeper_id == $user->id) // Only for assigned dirty rooms
+                    ->visible(fn(Room $record) => $user->role === 'Housekeeper' && $record->is_clean == 0 && $record->housekeeper_id == $user->id)
                     ->action(function (Room $record) {
                         $record->is_clean = 2; // Mark as "In Progress"
                         $record->save();
+                        // Trigger the custom event to play the start sound
+                        $this->dispatch('playSound', 'cleaning-start');
                     }),
-
-                // Housekeeper: Mark room as clean after cleaning is done
+                
                 Tables\Actions\Action::make('finishCleaning')
                     ->label('Finish Cleaning')
                     ->icon('heroicon-o-check-circle')
-                    ->visible(fn(Room $record) => $user->role === 'Housekeeper' && $record->is_clean == 2 && $record->housekeeper_id == $user->id) // Only for rooms "in progress"
+                    ->visible(fn(Room $record) => $user->role === 'Housekeeper' && $record->is_clean == 2 && $record->housekeeper_id == $user->id)
                     ->action(function (Room $record) {
                         $record->is_clean = 1; // Mark as clean
                         $record->save();
+                        // Trigger the custom event to play the completion sound
+                        $this->dispatch('playSound', 'cleaning-complete');
                     }),
-
-                // Frontdesk: Acknowledge the cleaning completion
+                
                 Tables\Actions\Action::make('acknowledgeCleaning')
                     ->label('Acknowledge Cleaning')
                     ->icon('heroicon-o-hand-thumb-up')
-                    ->visible(fn(Room $record) => $user->role === 'FrontDesk' && $record->is_clean == 1) // Only for clean rooms
+                    ->visible(fn(Room $record) => $user->role === 'FrontDesk' && $record->is_clean == 1)
                     ->action(function (Room $record) {
-                        $record->status = 1; // Mark room as available again
+                        $record->status = 1; // Mark room as available
                         $record->save();
-                    }),
-                // Edit action (Visible only to Frontdesk)
+                        // Trigger the custom event to play the acknowledgment sound
+                        $this->dispatch('playSound', 'acknowledge-cleaning');
+                    }),                
                 Tables\Actions\EditAction::make()
-                ->hidden(condition: fn() => $user->role === 'Housekeeper'),
-
-                    // ->visible(fn() => $user->role === 'FrontDesk'),
-
-                // View action (Visible to both)
+                ->hidden(condition: fn(): bool => $user->role === 'Housekeeper'),
                 Tables\Actions\ViewAction::make()
                 ->hidden(condition: fn() => $user->role === 'Housekeeper'),
-
-
-                // Delete action (Visible only to Frontdesk)
                 Tables\Actions\DeleteAction::make()
                 ->hidden(condition: fn() => $user->role === 'Housekeeper'),
             ])

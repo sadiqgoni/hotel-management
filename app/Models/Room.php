@@ -45,4 +45,8 @@ class Room extends Model
     {
         return $this->hasMany(ReservationWaitlist::class);
     }
+    public function checkIn()
+    {
+        return $this->hasMany(CheckIn::class);
+    }
 }

@@ -107,7 +107,6 @@ class ManagementPanelProvider extends PanelProvider
             RestaurantReport::class,
             OrderReport::class, 
             Printer::class,
-            GuestForm::class
         ];
     }
 

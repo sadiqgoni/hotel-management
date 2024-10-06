@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Filament\Frontdesk\Resources\CheckInCheckOutResource\Pages;
 
 use App\Filament\Frontdesk\Resources\CheckInCheckOutResource;
@@ -12,32 +11,36 @@ use Filament\Notifications\Notification;
 class CreateCheckInCheckOut extends CreateRecord
 {
     protected static string $resource = CheckInCheckOutResource::class;
-    protected function getRedirectUrl(): string{
+
+    protected function getRedirectUrl(): string {
         return $this->getResource()::getUrl('index');
     }
 
-    protected function mutateFormDataBeforeCreate(array $data): array
+
+    // After the CheckInCheckOut record is created, delete the reservation
+    protected function afterCreate(): void
     {
-        // Check if the status is 'Checked In'
-        if ($data['status'] === 'Checked In') {
-            // Find the selected reservation by 'reservation_id' in the form
-            $reservation = Reservation::find($data['reservation_id']);
+        // Find the reservation by the 'reservation_id' provided in the form
+        $reservation = Reservation::find($this->record->reservation_id);
 
-            if ($reservation) {
-                // Update the reservation status to 'Checked In'
-                $reservation->update(['status' => 'Checked In']);
+        if ($reservation) {
+            // Delete the reservation after check-in is created
+            $reservation->delete();
 
-                // Optionally, update the room status (set to unavailable)
-                $reservation->room->update(['status' => 0]);
-            } else {
-                // Show a notification if the reservation was not found
-                Notification::make()
-                    ->title('Reservation not found!')
-                    ->danger()
-                    ->send();
-            }
+            // Optionally, update the room status (set to unavailable)
+            $reservation->room->update(['status' => 0]);
+
+            // Show a success notification
+            Notification::make()
+                ->title('Guest checked in!')
+                ->success()
+                ->send();
+        } else {
+            // Show an error notification if the reservation wasn't found
+            Notification::make()
+                ->title('Reservation not found!')
+                ->danger()
+                ->send();
         }
-
-        return $data; // Proceed with creating the CheckInCheckOut record
     }
 }

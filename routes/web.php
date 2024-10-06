@@ -2,6 +2,7 @@
 
 use App\Filament\Pages\ReservationSummary;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\InvoicedController;
 use App\Http\Controllers\OrderReportController;
 use App\Filament\Management\Pages\OrderReport;
 use App\Http\Controllers\PrinterController;
@@ -34,3 +35,6 @@ Route::group(['prefix' => 'printer'], function () {
         ->can('delete printer')
         ->name('printer.destroy');
 });
+
+Route::get('/checkout/invoice/{id}', [InvoicedController::class, 'generateInvoice'])->name('invoice.generate');
+
