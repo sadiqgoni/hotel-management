@@ -231,7 +231,7 @@
                     <x-slot name="heading">
                         Additional Charges
                     </x-slot>
-//sadiq goni
+
                     <div class="space-y-2">
                         <!-- Additional Charges Input -->
                         <div class="flex flex-col">
