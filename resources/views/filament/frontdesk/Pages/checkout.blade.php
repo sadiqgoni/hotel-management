@@ -233,14 +233,12 @@
                     </x-slot>
 
                     <div class="space-y-2">
-                        <!-- Additional Charges Input -->
                         <div class="flex flex-col">
                             <label class="font-medium">Additional Charges:</label>
                             <input type="number" class="border rounded p-2 dark:bg-gray-800" x-model="additionalCharges"
                                 x-on:input="calculatePayableAmount()" placeholder="Enter charges" />
                         </div>
 
-                        <!-- Additional Charge Comments -->
                         <div class="flex flex-col mt-4">
                             <label class="font-medium">Comments:</label>
                             <textarea class="border rounded p-2 dark:bg-gray-800"
