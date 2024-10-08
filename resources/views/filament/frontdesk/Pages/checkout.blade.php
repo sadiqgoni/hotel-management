@@ -372,7 +372,7 @@
             <div class="justify-end mt-4 space-x-8">
                 <x-filament::button
                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full shadow-md hover:shadow-lg transition-shadow"
-                    onclick="window.location.href='{{ route('invoice.generate', ['id' => $selectedCheckIn->id]) }}'">
+                    onclick="window.location.href='{{ route('invoiced.generate', ['id' => $selectedCheckIn->id]) }}'">
                     Print
 
                 </x-filament::button>
