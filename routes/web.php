@@ -36,5 +36,5 @@ Route::group(['prefix' => 'printer'], function () {
         ->name('printer.destroy');
 });
 
-Route::get('/checkout/invoice/{id}', [InvoicedController::class, 'generateInvoice'])->name('invoice.generate');
+Route::get('/checkout/invoice/{id}', [InvoicedController::class, 'generateInvoice'])->name('invoiced.generate');
 

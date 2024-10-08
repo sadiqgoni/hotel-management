@@ -24,6 +24,6 @@ class InvoicedController extends Controller
         $pdf = PDF::loadView('printable.invoice', $data);
         
         // Return the PDF as a download or inline view
-        return $pdf->stream('invoice.pdf');
+        return $pdf->stream('invoiced.pdf');
     }
 }
