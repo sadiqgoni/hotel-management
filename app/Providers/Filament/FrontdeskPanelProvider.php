@@ -8,6 +8,10 @@ use App\Filament\Frontdesk\Pages\ReservationCalendar;
 use App\Filament\Frontdesk\Resources\CarRentalResource;
 use App\Filament\Frontdesk\Resources\CarResource;
 use App\Filament\Frontdesk\Resources\CheckInCheckOutResource;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use App\Filament\Frontdesk\Resources\CheckInResource;
 use App\Filament\Frontdesk\Resources\GroupReservationResource;
 use App\Filament\Frontdesk\Resources\GuestResource;
@@ -26,6 +30,8 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
 use Filament\Support\Colors\Color;
 use Filament\Navigation\MenuItem;
 use App\Filament\Pages\EditProfile;
@@ -43,6 +49,14 @@ use Swis\Filament\Backgrounds\FilamentBackgroundsPlugin;
 use Swis\Filament\Backgrounds\ImageProviders\MyImages;
 class FrontdeskPanelProvider extends PanelProvider
 {
+    public function boot(): void
+    {
+        // Register scroll to top event
+        // FilamentView::registerRenderHook(
+        //     PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+        //     fn(): string => Blade::render("@livewire('report.day-close')"),
+        // );
+    }
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -113,9 +127,13 @@ class FrontdeskPanelProvider extends PanelProvider
 
                 FilamentFullCalendarPlugin::make()
                     ->selectable()
-                    ->editable()
+                    ->editable(),
+
+
+
                 // FilamentApexChartsPlugin::make()
             ]);
+
     }
 
     protected function getResources(): array
