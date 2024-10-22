@@ -5,29 +5,14 @@ namespace App\Filament\Frontdesk\Resources;
 use App\Filament\Frontdesk\Resources\CheckInResource\Pages;
 use App\Filament\Frontdesk\Resources\CheckInResource\RelationManagers;
 use App\Models\CheckIn;
-use App\Models\Reservation;
-use App\Models\User;
 use Filament\Infolists\Components\Grid;
-use Filament\Infolists\Components\Group;
-use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Split;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
-use Filament\Forms;
-use Filament\Forms\Components\Card;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Wizard\Step;
-use Filament\Forms\Form;
-use Filament\Notifications\Collection;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+
 
 class CheckInResource extends Resource
 {
@@ -44,14 +29,10 @@ class CheckInResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID'),
-                // Reservation ID column
+            
                 Tables\Columns\TextColumn::make('reservation_number')
                     ->label('Reservation ID')
-                    ->sortable()
-                    ->formatStateUsing(fn($state) => '#' . str_pad($state, 4, '0', STR_PAD_LEFT)),
-                // Room Number column
+                    ->sortable(),                // Room Number column
                 Tables\Columns\TextColumn::make('room_number')
                     ->label('Room Number')
                     ->sortable()

@@ -7,6 +7,7 @@ class Reservation extends Model
 {
     
     protected $fillable = [
+        'reservation_number',
         'guest_id',
         'room_id',
         'check_in_date',
@@ -23,6 +24,7 @@ class Reservation extends Model
         'status',
         'payment_status',
         'special_requests',
+        'remaining_balance',
     ];
 
 
@@ -35,10 +37,7 @@ class Reservation extends Model
     {
         return $this->belongsTo(Room::class);
     }
-    public function checkInCheckOuts()
-    {
-        return $this->hasMany(CheckInCheckOut::class);
-    }
+
     public function couponManagement()
     {
         return $this->belongsTo(CouponManagement::class);

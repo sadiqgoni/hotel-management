@@ -1,34 +1,34 @@
 <?php
+
 namespace App\Filament\Frontdesk\Pages;
 
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
-use Filament\Pages\Page;
-use Illuminate\Support\Facades\DB;
-use Filament\Forms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Infolists\Infolist;
-use App\Models\CheckIn;
+use Filament\Tables\Table;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
 use Filament\Forms\Concerns\InteractsWithForms;
-use Illuminate\Support\Facades\Log;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Pages\Page;
+use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
+use App\Models\CheckIn;
 use App\Models\CheckOut;
 use Filament\Notifications\Notification;
 
-
-class CheckOutPage extends Page implements HasForms
+class CheckOutPage extends Page implements HasForms, HasTable
 {
+    use InteractsWithForms;
+    use InteractsWithTable;
 
+    // Static properties
     protected static string $view = 'filament.frontdesk.pages.checkout';
     protected static ?string $navigationGroup = 'Daily Operations';
     protected static ?int $navigationSort = 3;
     protected static ?string $navigationLabel = 'Check Out';
-    protected static ?string $breadcrumb =  'Check Out Guest';
-    protected static ?string $modelLabel =  'Check Out';
-
+    protected static ?string $breadcrumb = 'Check Out Guest';
+    protected static ?string $modelLabel = 'Check Out';
     protected static ?string $title = 'Check Out Guest';
-    
-    use InteractsWithForms;
 
     public ?array $data = [];
     public ?CheckIn $selectedCheckIn = null;
@@ -38,136 +38,175 @@ class CheckOutPage extends Page implements HasForms
     public ?float $payableAmount = 0;
     public ?float $restaurantCharge = 0;
     public ?float $payingAmount = 0;
+    public bool $showHistory = false;
 
-    
-
-
+    // Lifecycle method to initialize data
     public function mount()
     {
-        // When the component mounts, fill the form if needed.
         $this->form->fill();
-        $this->calculatePayableAmount();  // Initialize the payable amount
+        $this->calculatePayableAmount();
     }
-    
-    
 
+    // Toggle show/hide checkout history
+    public function toggleHistory()
+    {
+        $this->showHistory = !$this->showHistory;
+    }
+
+    // Define the table of checked-out guests
+    public function table(Table $table): Table
+    {
+        return $table->query(CheckOut::query())
+            ->columns([
+                TextColumn::make('guest_name')->label('Guest Name'),
+                TextColumn::make('room_number')->label('Room Number'),
+                TextColumn::make('check_in_time')->label('Check-in Date'),
+                TextColumn::make('check_out_time')->label('Check-out Date'),
+                TextColumn::make('total_amount')->label('Total Bill'),
+            ])
+            ->actions([
+
+                Tables\Actions\Action::make('generateInvoice')
+                ->label('Generate Invoice')
+                ->icon('heroicon-o-document-text')
+                ->url(fn(CheckOut $record) => route('invoiced.generate', ['id' => $record->id])) // Pass only the 'id'
+                ->openUrlInNewTab()
+                ->color('primary'),
+
+            ]);
+    }
+
+    // Define the checkout form
     public function form(Form $form): Form
     {
         return $form->schema([
             Select::make('check_in_id')
                 ->label('Select Guest and Room')
-                ->options(CheckIn::query()->pluck('room_number', 'id')->map(function ($room_number, $id) {
-                    $checkIn = CheckIn::find($id);
-                    return "{$checkIn->guest_name} - Room {$room_number}";
-                }))
+                ->options(
+                    CheckIn::where('booking_status', 'Checked In')
+                        ->pluck('room_number', 'id')
+                        ->map(fn($room_number, $id) => "{$this->getGuestInfo($id, $room_number)}")
+                )
                 ->reactive()
                 ->afterStateUpdated(fn($state) => $this->updateSelectedCheckIn($state))
                 ->searchable()
                 ->placeholder('Select a guest by name or room')
                 ->required(),
         ])
-            ->columns(2)
-            ->statePath('data');
+        ->columns(2)
+        ->statePath(path: 'data');
     }
 
+    // Helper function to get guest info
+    private function getGuestInfo($id, $room_number)
+    {
+        $checkIn = CheckIn::find($id);
+        return "{$checkIn->guest_name} - Room {$room_number}";
+    }
 
-
+    // Update the selected check-in details
     public function updateSelectedCheckIn($checkInId)
-{
-    $this->selectedCheckIn = CheckIn::find($checkInId);
-    
-    if ($this->selectedCheckIn) {
-        $this->restaurantCharge = $this->selectedCheckIn->restaurant_bill; // Accessing restaurant_bill here
-     
-    } else {
-        $this->restaurantCharge = 0; // Default value if selectedCheckIn is null
+    {
+        $this->selectedCheckIn = CheckIn::find($checkInId);
+        $this->restaurantCharge = $this->selectedCheckIn->restaurant_bill ?? 0;
+        $this->calculatePayableAmount();
     }
 
-    $this->calculatePayableAmount(); 
-}
-    // Real-time calculations
+    // Update discount percentage and recalculate
     public function updatedDiscountPercentage()
     {
         $this->calculateDiscount();
         $this->calculatePayableAmount();
     }
 
+    // Update additional charges and recalculate
     public function updatedAdditionalCharges()
     {
         $this->calculatePayableAmount();
     }
 
-    public function calculateDiscount()
+    // Calculate discount amount
+    private function calculateDiscount()
     {
         $this->discountAmount = ($this->selectedCheckIn->total_amount ?? 0) * ($this->discountPercentage / 100);
     }
 
-    public function calculatePayableAmount()
+    // Calculate total payable amount
+    private function calculatePayableAmount()
     {
         $totalAmount = $this->selectedCheckIn->total_amount ?? 0;
         $this->payableAmount = $totalAmount - $this->discountAmount + $this->additionalCharges;
     }
-    
-    
-        // ... existing code ...
-    
-        public function checkOut()
-        {
-            // Validate that a check-in is selected
-            if (!$this->selectedCheckIn) {
-                Notification::make()
-                    ->title('No check-in selected')
-                    ->body('Please select a check-in to proceed with checkout.')
-                    ->danger()
-                    ->send();
-                return;
-            }
-    
-            // Calculate the due amount
-            $dueAmount = $this->payableAmount - $this->selectedCheckIn->paid_amount;
-    
-            // Ensure the paying amount is equal to or greater than the due amount
-            if (($this->payingAmount ?? 0) > $dueAmount) {
-                Notification::make()
-                    ->title('Insufficient Payment')
-                    ->body("The payment amount must be at least ₦" . number_format($dueAmount, 2) . " to complete the checkout.")
-                    ->danger()
-                    ->send();
-                return;
-            }
-    
-            // Create a new CheckOut record
-            $checkOut = new CheckOut();
-            $checkOut->check_in_id = $this->selectedCheckIn->id;
-            $checkOut->guest_name = $this->selectedCheckIn->guest_name;
-            $checkOut->room_number = $this->selectedCheckIn->room_number;
-            $checkOut->check_in_time = $this->selectedCheckIn->check_in_time;
-            $checkOut->check_out_time = now(); // Current time as checkout time
-            $checkOut->total_amount = $this->payableAmount;
-            $checkOut->discount_percentage = $this->discountPercentage;
-            $checkOut->discount_amount = $this->discountAmount;
-            $checkOut->additional_charges = $this->additionalCharges;
-            $checkOut->restaurant_charge = $this->restaurantCharge;
-            $checkOut->paid_amount = $this->selectedCheckIn->paid_amount + $this->payingAmount;
-            
-            // Save the CheckOut record
-            $checkOut->save();
-    
-            // Update the CheckIn record
-            $this->selectedCheckIn->booking_status = 'Checked_out';
-            $this->selectedCheckIn->save();
-    
-            // Show success notification
-            Notification::make()
-                ->title('Checkout Successful')
-                ->body('The guest has been successfully checked out.')
-                ->success()
-                ->send();
-    
-            // Redirect or reset form as needed
-            // $this->redirect(CheckOut::getUrl());
-        }
-    
-        // ... rest of the existing code ...
 
+    // Perform the checkout action
+    public function checkOut()
+    {
+        if (!$this->validateCheckOut()) {
+            return;
+        }
+
+        // Create new checkout record
+        $checkOut = $this->createCheckOutRecord();
+
+        // Update the status of the check-in
+        $this->updateCheckInStatus();
+
+        // Notify user of success
+        Notification::make()
+            ->title('Checkout Successful')
+            ->body('The guest has been successfully checked out.')
+            ->success()
+            ->send();
+    }
+
+    // Helper function to validate checkout
+    private function validateCheckOut(): bool
+    {
+        if (!$this->selectedCheckIn) {
+            $this->notifyError('No check-in selected', 'Please select a check-in to proceed with checkout.');
+            return false;
+        }
+
+        $dueAmount = $this->payableAmount - $this->selectedCheckIn->paid_amount;
+        if (($this->payingAmount ?? 0) > $dueAmount) {
+            $this->notifyError('Insufficient Payment', "The payment must be at least ₦" . number_format($dueAmount, 2) . " to complete the checkout.");
+            return false;
+        }
+
+        return true;
+    }
+
+    // Helper function to create the checkout record
+    private function createCheckOutRecord()
+    {
+        return CheckOut::create([
+            'check_in_id' => $this->selectedCheckIn->id,
+            'guest_name' => $this->selectedCheckIn->guest_name,
+            'room_number' => $this->selectedCheckIn->room_number,
+            'check_in_time' => $this->selectedCheckIn->check_in_time,
+            'check_out_time' => now(),
+            'total_amount' => $this->payableAmount,
+            'discount_percentage' => $this->discountPercentage,
+            'discount_amount' => $this->discountAmount,
+            'additional_charges' => $this->additionalCharges,
+            'restaurant_charge' => $this->restaurantCharge,
+            'paid_amount' => $this->selectedCheckIn->paid_amount + $this->payingAmount,
+        ]);
+    }
+
+    // Helper function to update the status of the check-in
+    private function updateCheckInStatus()
+    {
+        $this->selectedCheckIn->update(['booking_status' => 'Checked_out']);
+    }
+
+    // Helper function to show error notifications
+    private function notifyError($title, $message)
+    {
+        Notification::make()
+            ->title($title)
+            ->body($message)
+            ->danger()
+            ->send();
+    }
 }

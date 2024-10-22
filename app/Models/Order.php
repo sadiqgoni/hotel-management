@@ -11,8 +11,9 @@ class Order extends Model
 
 
     protected $fillable = [
-        'user_id',      
-        'guest_id',       
+        'user_id', 
+        'invoice_number',     
+        'guest_info',       
         'table_id',      
         'service_charge',
         'total_amount',
@@ -23,11 +24,9 @@ class Order extends Model
         'dining_option',
         'billing_option',
         'payment_method',
+        'room_number'
     ];
-    public function guest()
-    {
-        return $this->belongsTo(Guest::class);
-    }
+  
 
     public function user()
     {

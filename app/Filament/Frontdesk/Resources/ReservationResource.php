@@ -7,6 +7,13 @@ use App\Models\CouponManagement;
 use App\Models\Reservation;
 use App\Models\Guest;
 use App\Models\Room;
+use Filament\Infolists\Components\Grid;
+use Filament\Infolists\Components\Group;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\Split;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Closure;
 use Filament\Forms;
 use Filament\Forms\Components\Checkbox;
@@ -26,6 +33,7 @@ use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use App\Jobs\ExpireReservation;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 
@@ -117,6 +125,9 @@ class ReservationResource extends Resource
                             ->label('Check-In Date')
                             ->required()
                             ->reactive()
+                            ->closeOnDateSelection()
+                            // ->native(false)
+                            ->default(now())
                             ->afterStateUpdated(function ($state, callable $get, callable $set) {
                                 static::updateTotalAmount($get, $set);
                                 static::updateNumberOfNights($get, $set);
@@ -124,6 +135,8 @@ class ReservationResource extends Resource
 
                         DatePicker::make('check_out_date')
                             ->label('Check-Out Date')
+                            ->closeOnDateSelection()
+                            // ->native(false)
                             ->required()
                             ->afterOrEqual('check_in_date')
                             ->reactive()
@@ -163,10 +176,10 @@ class ReservationResource extends Resource
                             ->label('Payment Method')
                             ->searchable()
                             ->options([
-                                'card' => 'Card Payment',
-                                'cash' => 'Cash Payment',
-                                'mobile' => 'Mobile Transfer Payment',
-                            ]),
+                                'Card' => 'Card Payment',
+                                'Transfer' => 'Transfer Payment',
+                                'Cash' => 'Cash Payment',
+                                ]),
                         TextInput::make('amount_paid')->label('Amount Paid')
                             ->reactive()
                             ->afterStateUpdated(function ($state, callable $get, callable $set) {
@@ -254,8 +267,11 @@ class ReservationResource extends Resource
 
     public static function checkPaymentStatus(callable $get, callable $set)
     {
-        $totalAmount = $get('total_amount');
-        $amountPaid = $get('amount_paid') ?? 0;
+
+
+
+        $totalAmount = (int) preg_replace('/[^0-9.]/', '', $get('total_amount', 0));
+        $amountPaid = (int) preg_replace('/[^0-9.]/', '', $get('amount_paid', 0));
 
         // Validate payment to prevent overpaying
         if ($amountPaid > $totalAmount) {
@@ -278,15 +294,18 @@ class ReservationResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
+                Tables\Columns\TextColumn::make('reservation_number')
                     ->label('Reservation No.')
                     ->sortable()
                     ->searchable(),
-                
+
 
                 TextColumn::make('guest.name')
                     ->label('Guest Name')
                     ->sortable()
+                    ->color(fn(?Model $record): array => \Filament\Support\Colors\Color::hex(optional($record->tenant)->color ?? '#22e03a'))
+                    ->weight('bold')
+                    ->toggleable()
                     ->searchable(),
 
                 TextColumn::make('room.room_number')
@@ -319,6 +338,9 @@ class ReservationResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->label('Edit')
+                    ->icon('heroicon-o-pencil'),
                 Tables\Actions\Action::make('checkIn')
                     ->label('Check In')
                     ->icon('heroicon-o-arrow-left-end-on-rectangle')
@@ -326,26 +348,26 @@ class ReservationResource extends Resource
                     ->action(function (Reservation $record) {
                         // Create the new CheckIn record with reservation data
                         CheckIn::create([
-                            'user_id'              => $record->user_id,
-                            'reservation_number'       => $record->id,
-                            'check_in_time'        => now(),
-                            'guest_name'           => $record->guest->name,  // Accessing related guest name
-                            'guest_phone'          => $record->guest->phone_number,  // Accessing related guest phone number
-                            'paid_amount'          => $record->amount_paid,
-                            'room_number'          => $record->room->room_number,
-                            'due_amount'           => $record->remaining_balance,
-                            'booking_status'       => 'Checked In',  // You can update the booking status upon check-in
-                            'payment_status'       => $record->payment_status,
-                            'coupon_management'    => $record->coupon_management_id,
-                            'coupon_discount'      => $record->discount_amount,
-                            'price_per_night'      => $record->price_per_night,
-                            'frequent_guest_message'=> $record->frequent_guest_message,
-                            'number_of_nights'     => $record->number_of_nights,
-                            'special_requests'     => $record->special_requests,
-                            'number_of_people'     => $record->number_of_people,
-                            'total_amount'         => $record->total_amount,
+                            'user_id' => $record->user_id,
+                            'reservation_number' => $record->reservation_number,
+                            'check_in_time' => now(),
+                            'guest_name' => $record->guest->name,
+                            'guest_phone' => $record->guest->phone_number,
+                            'paid_amount' => $record->amount_paid,
+                            'room_number' => $record->room->room_number,
+                            'due_amount' => $record->remaining_balance,
+                            'booking_status' => 'Checked In',
+                            'payment_status' => $record->payment_status,
+                            'coupon_management' => $record->coupon_management_id,
+                            'coupon_discount' => $record->discount_amount,
+                            'price_per_night' => $record->price_per_night,
+                            'frequent_guest_message' => $record->frequent_guest_message,
+                            'number_of_nights' => $record->number_of_nights,
+                            'special_requests' => $record->special_requests,
+                            'number_of_people' => $record->number_of_people,
+                            'total_amount' => $record->total_amount,
                         ]);
-                        
+
 
                         // Delete the reservation after check-in
                         $record->delete();
@@ -451,6 +473,85 @@ class ReservationResource extends Resource
         ];
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('Guest Information')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextEntry::make('guest.name')
+                                    ->label('Guest Name'),
+                                TextEntry::make('guest.phone_number')
+                                    ->label('Phone Number'),
+                                TextEntry::make('guest.nin_number')
+                                    ->label('NIN Number'),
+                                TextEntry::make('guest.stay_count')
+                                    ->label('Stay Count'),
+                            ]),
+                    ]),
+
+                Section::make('Reservation Details')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextEntry::make('room.room_number')
+                                    ->label('Room Number'),
+                                TextEntry::make('price_per_night')
+                                    ->label('Price Per Night'),
+                                TextEntry::make('check_in_date')
+                                    ->label('Check-In Date'),
+                                TextEntry::make('check_out_date')
+                                    ->label('Check-Out Date'),
+                                TextEntry::make('number_of_nights')
+                                    ->label('Number of Nights'),
+                                TextEntry::make('number_of_people')
+                                    ->label('Number of People'),
+                            ]),
+                    ]),
+
+                Section::make('Discount Information')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextEntry::make('coupon.code')
+                                    ->label('Coupon Code'),
+                                TextEntry::make('discount_amount')
+                                    ->label('Discount Amount'),
+                                TextEntry::make('total_amount')
+                                    ->label('Total Amount'),
+                            ]),
+                    ]),
+
+                Section::make('Payment Details')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextEntry::make('payment_method')
+                                    ->label('Payment Method'),
+                                TextEntry::make('amount_paid')
+                                    ->label('Amount Paid'),
+                                TextEntry::make('remaining_balance')
+                                    ->label('Remaining Balance'),
+                                TextEntry::make('payment_status')
+                                    ->label('Payment Status'),
+                            ]),
+                    ]),
+
+                Section::make('Special Requests & Confirmation')
+                    ->schema([
+                        Grid::make(1)
+                            ->schema([
+                                TextEntry::make('special_requests')
+                                    ->label('Special Requests'),
+                                TextEntry::make('status')
+                                    ->label('Reservation Status'),
+                            ]),
+                    ]),
+            ]);
+    }
+
     public static function scheduleExpiration($reservationId)
     {
         ExpireReservation::dispatch($reservationId)->delay(now()->addHours(1));
@@ -462,6 +563,8 @@ class ReservationResource extends Resource
             'index' => Pages\ListReservations::route('/'),
             'create' => Pages\CreateReservation::route('/create'),
             'edit' => Pages\EditReservation::route('/{record}/edit'),
+            'view' => Pages\ViewReservation::route('/{record}'),
+
         ];
     }
 }

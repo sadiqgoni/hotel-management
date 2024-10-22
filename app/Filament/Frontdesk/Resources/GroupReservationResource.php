@@ -217,26 +217,7 @@ class GroupReservationResource extends Resource
         $set('total_amount', $totalAmount);
     }
 
-    // protected static function updateTotalAmount(callable $get, callable $set)
-    // {
-    //     $checkInDate = Carbon::parse($get('check_in_date'));
-    //     $checkOutDate = Carbon::parse($get('check_out_date'));
-    //     $rooms = Room::whereIn('id', json_decode($get('room_ids'), true))->get();
-    //     $pricePerNight = $rooms->avg('price_per_night');
-
-    //     if ($checkInDate && $checkOutDate) {
-    //         $days = $checkInDate->diffInDays($checkOutDate);
-    //         $totalAmount = $days * $pricePerNight;
-
-    //         // Apply coupon if available
-    //         $discount = $get('discount_amount') ?? 0;
-    //         $total = max(0, $totalAmount - $discount);
-
-    //         $set('total_amount', $total);
-    //     } else {
-    //         $set('total_amount', 0);
-    //     }
-    // }
+  
 
     public static function updateNumberOfNights(callable $get, callable $set)
     {

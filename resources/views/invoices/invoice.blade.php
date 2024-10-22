@@ -12,7 +12,7 @@
 
         body {
             font-family: Arial, sans-serif;
-            font-size: 16px;
+            font-size: 12px;
             line-height: 1.7;
             margin: 0;
             padding: 10px;
@@ -77,7 +77,7 @@
             <h2>White24 Palace </h2>
             <p>Kano, Nigeria</p>
         </div>
-        <p>Date: {{ now()->format('M d, Y') }}</p>
+        <p>Date: {{ now()->format('M d, Y') }} || {{ now()->format('h:i A') }}</p>
         <div class="divider"></div>
         <table>
             <tr>
@@ -126,12 +126,12 @@
             </tr>
         </table>
 
-        @if($order->guest)
-            <p><strong>Billing To:</strong> {{ $order->guest->name }}</p>
+        @if($order->guest_info)
+            <p><strong>Billing To:</strong> {{ $order->guest_info }}</p>
         @endif
 
         @if($order->user)
-            <p>Bill By: {{ $order->user->name }}</p>
+            <p>Cashier: {{ $order->user->name }}</p>
         @endif
 
 
@@ -139,7 +139,7 @@
             <p><strong>Table:</strong> {{ $order->table->name }} &nbsp;&nbsp;&nbsp; <strong>Order No.:</strong>
                 #{{ $order->id }}</p>
         @else
-            <p><strong>Order No.:</strong> #{{ $order->id }}</p>
+            <p><strong>Order No.:</strong> {{ $order->invoice_number }}</p>
         @endif
 
         <div class="footer">

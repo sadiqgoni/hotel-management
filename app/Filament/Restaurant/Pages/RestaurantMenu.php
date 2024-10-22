@@ -50,6 +50,7 @@ class RestaurantMenu extends Page implements HasForms
     public $billingOption = '';
     public $paymentMethod = '';
 
+    public $roomNumber = '';
     // Event listeners
     protected $listeners = ['refreshComponent' => '$refresh'];
 
@@ -61,7 +62,6 @@ class RestaurantMenu extends Page implements HasForms
         $this->tables = Table::all();
         $this->totalItems = MenuItem::count(); // Total number of items
         $this->form->fill();
-
 
     }
     public function form(Form $form): Form
@@ -80,27 +80,24 @@ class RestaurantMenu extends Page implements HasForms
                     ->required(),
 
 
-
-                    Select::make('selectedGuest')
-                    ->placeholder('Select Guest')
+                Select::make('selectedGuest')
+                    ->options(CheckIn::all()->mapWithKeys(function ($checkIn) {
+                        return [$checkIn->guest_name => $checkIn->guest_name . ' - Room ' . $checkIn->room_number];
+                    }))
                     ->label('')
-                    ->options(
-                        CheckIn::query()  // Query directly from the CheckIn model
-                            ->whereNotNull('guest_name')  // Ensure there's a guest name
-                            ->get()  // Get the results
-                            ->mapWithKeys(function ($checkIn) {  // Map results to show guest name and room number
-                                return [
-                                    $checkIn->guest_id => "{$checkIn->guest_name} - Room {$checkIn->room_number}"
-                                ];
-                            })
-                            ->toArray()
-                    )
+                    ->placeholder('Select a guest')
                     ->searchable()
                     ->preload()
-                    ->visible(fn($get) => $get('customerType') === 'guest')  // Only show when customer type is 'guest'
-                    ->required()  // Make it required
-,                           
-
+                    ->reactive()
+                    ->visible(fn($get) => $get('customerType') === 'guest')
+                    ->required()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        // Set the corresponding room number in a hidden field
+                        $checkIn = CheckIn::where('guest_name', $state)->first();
+                        if ($checkIn) {
+                            $set('roomNumber', $checkIn->room_number);
+                        }
+                    }),
                 Select::make('diningOption')
                     ->placeholder('Dining Option')
                     ->label('')
@@ -139,23 +136,14 @@ class RestaurantMenu extends Page implements HasForms
                     ->placeholder('Payment Method')
                     ->searchable()
                     ->visible(fn($get) => $get('billingOption') === 'restaurant' || $get('customerType') === 'walkin'),
+
+                TextInput::make('roomNumber')
+                    ->readOnly()
+                    ->visible(fn($get) => $get('customerType') === 'guest'),
             ]);
     }
-    /**
-     * Load guests who have checked-in reservations.
-     */
-    public function loadGuestsWithCheckedInRooms()
-    {
-        // Fetch guests from the CheckIn model where the guest is checked in
-        $this->guestsWithRooms = CheckIn::select('guest_name', 'room_number')
-            ->whereNotNull('guest_name')
-            ->get();
-    }
-    
 
-    /**
-     * Update menu items based on the search term.
-     */
+
     public function updatedSearchTerm(): void
     {
         $this->menuItems = MenuItem::with('menuCategory')
@@ -249,6 +237,7 @@ class RestaurantMenu extends Page implements HasForms
             'selectedGuest',
             'selectedTable',
             'billingOption',
+            'roomNumber',
             'diningOption',
             'paymentMethod',
             'searchTerm',
@@ -346,36 +335,37 @@ class RestaurantMenu extends Page implements HasForms
         // Proceed with placing the order after validation
         $data = $this->form->getState();
 
+        // Get the last invoice ID
+        $lastOrder = Order::latest()->first();
+        $newId = $lastOrder ? $lastOrder->id + 1 : 1; 
+
+        // Format the invoice number
+        $invoiceNumber = '#' . str_pad($newId, 4, '0', STR_PAD_LEFT); // Pad with zeros to make it 4 digits
+
         $order = Order::create([
             'user_id' => auth()->id(),
             'customer_type' => $data['customerType'] ?? null,
-            'guest_id' => $data['selectedGuest'] ?? null,
+            'guest_info' => $data['selectedGuest'] ?? null,
             'table_id' => $data['selectedTable'] ?? null,
+            'room_number' => $data['roomNumber'] ?? null,
             'total_amount' => $this->total ?? null,
             'payment_method' => $data['paymentMethod'] ?? null,
             'dining_option' => $data['diningOption'] ?? null,
             'billing_option' => $data['billingOption'] ?? null,
+            'invoice_number' => $invoiceNumber, 
         ]);
 
-        // If guest_id is provided and billing_option is 'settle in restaurant'
-        if ($order->guest_id && $order->billing_option === 'charge_room') {
-            // Retrieve the guest details
-            $guest = Guest::find($order->guest_id);
+        // Check if guest_info is set and billing_option is charge_room
+        if ($order->guest_info && $order->billing_option === 'charge_room') {
+            // Use the room_number from the hidden field
+            $guest = CheckIn::where('guest_name', $order->guest_info)
+                ->where('room_number', $order->room_number) // Use the room_number here
+                ->first();
 
             if ($guest) {
-                // Get guest's name and phone number
-                $guestName = $guest->name;
-                $guestPhone = $guest->phone_number;
-
-                // Look for a matching entry in the CheckIn model
-                $checkIn = CheckIn::where('guest_name', $guestName)
-                    ->where('guest_phone', $guestPhone)
-                    ->first();
-
-                if ($checkIn) {
-                    // Set the restaurant bill as the total amount from the order
-                    $checkIn->update(['restaurant_bill' => $order->total_amount]);
-                }
+                // Update the restaurant_bill with the order's total amount
+                $guest->restaurant_bill += $order->total_amount; // Assuming you want to accumulate the bill
+                $guest->save();
             }
         }
 

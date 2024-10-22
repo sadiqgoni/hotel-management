@@ -3,24 +3,12 @@
 namespace App\Filament\Restaurant\Resources;
 
 use App\Filament\Restaurant\Resources\OrderResource\Pages;
-use App\Filament\Restaurant\Resources\OrderResource\RelationManagers;
 use App\Models\Order;
 use App\Models\User;
-use Filament\Forms\Components\TextInput;
-use Filament\Tables\Actions\Action;
-use Filament\Forms;
-use Filament\Forms\Form;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Forms\Components\ViewField;
-
-use Filament\Tables\Actions\Modal\Actions\ButtonAction;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-use Illuminate\Support\Str;
 
 class OrderResource extends Resource
 {
@@ -28,17 +16,16 @@ class OrderResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
     protected static ?string $navigationGroup = 'Sales';
-    protected static ?string $label = 'Order'; 
-    protected static ?string $pluralLabel = 'Orders'; 
+    protected static ?string $label = 'Order';
+    protected static ?string $pluralLabel = 'Orders';
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
+                Tables\Columns\TextColumn::make('invoice_number')
                     ->label('Invoice No.')
-                    ->sortable()
-                    ->formatStateUsing(fn ($record) => '#' . $record->id),
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('customer_type')
                     ->label('Customer Name')
                     ->searchable()
@@ -48,10 +35,10 @@ class OrderResource extends Resource
                                 ->where('id', '<=', $record->id)
                                 ->count();
                             return 'Customer 00' . str_pad($previousWalkinCount, 3, '0', STR_PAD_LEFT);
-                        } elseif ($record->customer_type === 'guest' && $record->guest) {
-                            return $record->guest->name;
+                        } elseif ($record->customer_type === 'guest') {
+                            return $record->guest_info;
                         }
-                        return 'Unknown Customer'; 
+                        return 'Unknown Customer';
                     }),
                 Tables\Columns\TextColumn::make('dining_option')
                     ->label('Dining Option')
@@ -69,11 +56,11 @@ class OrderResource extends Resource
                     ->colors([
                         'success' => 'transfer',
                         'warning' => 'card',
-                        'info' =>'cash'
+                        'info' => 'cash'
                     ]),
                 Tables\Columns\TextColumn::make('user_id')
                     ->label('Cashier')
-                    ->formatStateUsing(fn ($state) => User::find($state)?->name ?? 'Deleted User'),
+                    ->formatStateUsing(fn($state) => User::find($state)?->name ?? 'Deleted User'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created At')
                     ->date(),
@@ -86,7 +73,7 @@ class OrderResource extends Resource
                         'guest' => 'Guest',
                     ])
                     ->placeholder('Select Customer Type'),
-               
+
                 Tables\Filters\SelectFilter::make('payment_method')
                     ->options([
                         'cash' => 'Cash',
@@ -96,32 +83,22 @@ class OrderResource extends Resource
                     ->placeholder('Payment Method'),
             ])
             ->actions([
+
                 Tables\Actions\Action::make('openPaymentModal')
                     ->label('Make Payment')
                     ->icon('heroicon-o-banknotes')
                     ->modalContent(fn(Order $record) => view('filament.pages.order-table', ['order' => $record]))
                     ->color('success')
                     ->modalWidth(\Filament\Support\Enums\MaxWidth::Medium)
-                   ->modalSubmitActionLabel('Close'),
-
-
-                     Tables\Actions\Action::make('generateInvoice')
+                    ->modalSubmitActionLabel('Close')
+                    ->visible(fn(Order $record) => $record->billing_option !== 'charge_room'),
+                Tables\Actions\Action::make('generateInvoice')
                     ->label('Generate Invoice')
                     ->icon('heroicon-o-document-text')
                     ->url(fn(Order $record) => route('invoice.generate', $record))
                     ->openUrlInNewTab()
                     ->color('primary'),
-                // Tables\Actions\Action::make('sendInvoice')
-                //     ->label('Send Invoice')
-                //     // ->icon('heroicon-o-mail')
-                //     ->action(fn (Order $record) => $this->sendInvoice($record))
-                //     ->requiresConfirmation()
-                //     ->color('secondary'),
-                // Tables\Actions\Action::make('reprintOrderSlip')
-                //     ->label('Reprint Order Slip')
-                //     ->icon('heroicon-o-printer')
-                //     ->action(fn (Order $record) => $this->reprintOrderSlip($record))
-                //     ->color('warning'),
+
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
             ])
@@ -159,7 +136,7 @@ class OrderResource extends Resource
 
 //     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
 //     protected static ?string $navigationGroup = 'Sales';
- 
+
 //     public static function table(Table $table): Table
 //     {
 //         return $table

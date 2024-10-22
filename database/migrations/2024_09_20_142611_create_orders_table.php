@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('guest_id')->nullable()->constrained('guests')->cascadeOnDelete();  // If order is from a hotel guest
+            $table->string(column: 'invoice_number')->unique();
             $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->foreignId('table_id')->nullable()->constrained('tables')->cascadeOnDelete();  // If order is from a hotel guest
+            $table->foreignId('table_id')->nullable()->constrained('tables')->cascadeOnDelete();  
+            $table->string(column: 'guest_info')->nullable();
+            $table->string(column: 'room_number')->nullable();
             $table->decimal('amount_paid', 10, 2)->nullable();
             $table->decimal('service_charge', 10, 2)->nullable();
             $table->decimal('total_amount', 10, 2)->nullable();

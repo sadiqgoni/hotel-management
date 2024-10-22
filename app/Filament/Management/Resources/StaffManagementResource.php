@@ -45,6 +45,15 @@ class StaffManagementResource extends Resource
                                             ->required()
                                             ->label('Full Name')
                                             ->placeholder('Enter full name')
+                                            ->afterStateUpdated(function ($state, callable $set) {
+                                                $name = $state;
+                                                // Convert the first character of each word to uppercase
+                                                $formattedName = ucwords(strtolower($name));
+                                                // Set the formatted name
+                                                $set('full_name', $formattedName);
+                                            })
+            
+                                            ->live(onBlur: true)
                                             ->maxLength(255),
 
                                         Forms\Components\TextInput::make('email')
@@ -117,6 +126,15 @@ class StaffManagementResource extends Resource
                                     ->schema([
                                         Forms\Components\Textarea::make('address')
                                             ->label('Address')
+                                            ->afterStateUpdated(function ($state, callable $set) {
+                                                $name = $state;
+                                                // Convert the first character of each word to uppercase
+                                                $formattedName = ucwords(strtolower($name));
+                                                // Set the formatted name
+                                                $set('address', $formattedName);
+                                            })
+            
+                                            ->live(onBlur: true)
                                             ->placeholder('Enter address'),
 
                                         Forms\Components\Select::make('status')
@@ -139,12 +157,30 @@ class StaffManagementResource extends Resource
                                     ->schema([
                                         Forms\Components\TextInput::make('next_of_kin_name')
                                             ->label('Next of Kin Name')
+                                            ->afterStateUpdated(function ($state, callable $set) {
+                                                $name = $state;
+                                                // Convert the first character of each word to uppercase
+                                                $formattedName = ucwords(strtolower($name));
+                                                // Set the formatted name
+                                                $set('next_of_kin_name', $formattedName);
+                                            })
+            
+                                            ->live(onBlur: true)
                                             ->placeholder('Enter next of kin name')
                                             ->maxLength(255)
                                             ->required(),
 
                                         Forms\Components\Textarea::make('next_of_kin_address')
                                             ->label('Next of Kin Address')
+                                            ->afterStateUpdated(function ($state, callable $set) {
+                                                $name = $state;
+                                                // Convert the first character of each word to uppercase
+                                                $formattedName = ucwords(strtolower($name));
+                                                // Set the formatted name
+                                                $set('next_of_kin_address', $formattedName);
+                                            })
+            
+                                            ->live(onBlur: true)
                                             ->placeholder('Enter next of kin address')
                                             ->maxLength(500)
                                             ->required(),

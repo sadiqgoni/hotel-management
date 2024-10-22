@@ -5,6 +5,7 @@ namespace App\Filament\Frontdesk\Resources\ReservationResource\Pages;
 use App\Filament\Frontdesk\Resources\ReservationResource;
 use App\Models\CouponManagement;
 use App\Models\Guest;
+use App\Models\Reservation;
 use App\Models\Room;
 use Filament\Actions;
 use Illuminate\Support\Facades\Log;
@@ -22,6 +23,16 @@ class CreateReservation extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+
+        $lastReservation = Reservation::latest()->first();
+        $newId = $lastReservation ? $lastReservation->id + 1 : 1;
+    
+        // Generate reservation number with leading zeros (e.g., #0001, #0002)
+        $reservationNumber = '#' . str_pad($newId, 4, '0', STR_PAD_LEFT);
+    
+        // Assign the generated reservation number to the data array
+        $data['reservation_number'] = $reservationNumber;
+    
         // Fetch the coupon ID from the data
         $couponId = $data['coupon_management_id'] ?? null;
 

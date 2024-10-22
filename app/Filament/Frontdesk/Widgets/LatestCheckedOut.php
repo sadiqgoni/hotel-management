@@ -35,11 +35,7 @@ class LatestCheckedOut extends BaseWidget
                             ->weight('bold')
                             ->alignLeft(),
 
-                        // TextColumn::make('phone_number')
-                        //     ->searchable()
-                        //     ->sortable()
-                        //     ->color('gray')
-                        //     ->alignLeft(),
+                   
                     ])->space(),
 
                     Stack::make([

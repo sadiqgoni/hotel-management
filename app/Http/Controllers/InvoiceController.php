@@ -10,7 +10,7 @@ class InvoiceController extends Controller
    
     public function generateInvoice(Order $order)
     {
-        $order->load('orderItems.menuItem', 'guest');
+        $order->load('orderItems.menuItem', );
         $pdf = PDF::loadView('invoices.invoice', compact('order'));
         return $pdf->stream('invoice-' . $order->id . '.pdf');
     }

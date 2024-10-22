@@ -17,8 +17,7 @@ class ReservationCalendar  extends BaseDashboard
   
     public function getWidgets(): array
     {
-        return [
-        
+        return [    
            CalendarWidget::class
         ];
     }
